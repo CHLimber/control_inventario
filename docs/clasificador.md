@@ -121,11 +121,46 @@ Corrida `--prueba` sobre los recortes reales (16 por clase, 2 épocas; se mide l
 | cnn_ad | 6,4 | ~0,6 min/época × 40 = ~24 min máx. |
 | mobilenet | 12,4 (cabeza) | ~1,2 min/época × (15 + 10 fine-tuning) = ~29 min máx. |
 
-La extrapolación desde 144 imágenes subestima (la 1.ª época decodifica todos los JPEG y el
-entrenamiento real se compara abajo con lo medido).
+Una segunda corrida `--prueba` (desde el notebook, con otra carga de CPU) dio cnn 18,4 / cnn_ad
+6,6 / mobilenet 11,3 s por 1000 imágenes: con la CPU compartida, la medición varía ×2-3.
+
+**Entrenamiento real de `mobilenet` (medido):** 4958 recortes de train + 661 de val, 15 épocas de
+cabeza + 10 de fine-tuning (EarlyStopping no cortó: `val_loss` siguió bajando hasta la época 25)
+→ **37,6 min**. Las primeras épocas tardaron 260-180 s (decodificación de los JPEG + otros agentes
+entrenando a la vez); las últimas, 45-60 s. La estimación de la prueba (~29 min) se quedó corta
+×1,3. Con ese factor, `cnn` y `cnn_ad` costarían cada uno del orden de 25-35 min en esta PC: se
+pueden entrenar localmente de noche o en Colab (minutos con GPU).
 
 ## Comparación de modelos
 
 <!-- COMPARACION:INICIO -->
-_Pendiente: se completa con `python scripts/clasificador_entrenar.py --solo-comparar --actualizar-doc`._
+
+_Generada por `scripts/clasificador_entrenar.py` el 2026-10-16 03:17 desde `modelos/clasificador`._
+
+| modelo | entrada | parámetros | épocas | min | val acc | val loss | test acc | test loss | test F1 macro | bot↔lata (test) | sprite↔7up (test) | umbral sug. | n train | prueba |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| mobilenet | 160px | 2.269.513 | 25 | 37.570 | 0.971 | 0.106 | 0.967 | 0.157 | 0.944 | 6 | 1 | 0.500 | 4958 | no |
+
 <!-- COMPARACION:FIN -->
+
+**Estado (2026-10-16):** solo se entrenó `mobilenet` con los datos reales (snapshot de
+`datos/recortes` del 2026-10-15 23:19: 6249 recortes; train 4958 / val 661 / test 630). `cnn` y
+`cnn_ad` están implementados y probados con la corrida `--prueba`, pero **todavía no se
+entrenaron completos**: faltan sus filas en la comparación (local o Colab).
+
+### Lectura del resultado de `mobilenet`
+
+- val accuracy 0,971 / test 0,967; F1 macro test 0,944 (lo baja `fanta_lata`, ver abajo).
+- Por clase (test), precisión/recall: coca_botella 0,965/0,965 · coca_lata 1,000/0,964 ·
+  fanta_botella 0,973/0,957 · fanta_lata 0,667/1,000 (n=4) · sprite_botella 0,978/0,971 ·
+  sprite_lata 0,885/0,958 · pepsi_botella 0,879/1,000 · pepsi_lata 1,000/0,941 · 7up_lata 0,973/1,000.
+- Confusiones clave en test: botella↔lata 6 (3 sprite_botella→sprite_lata, 2 pepsi_lata→pepsi_botella,
+  1 coca_lata→coca_botella); Sprite↔7up 1 (sprite_lata→7up_lata).
+- Fine-tuning: la mejor época congelada tenía val_accuracy 0,968 / val_loss 0,126; tras el
+  fine-tuning, 0,971 / 0,106. Mejora chica pero consistente.
+- Umbral: en validación, con 0,5 se acepta el 100 % con 97,1 % de acierto (ya supera el 95 %
+  objetivo, por eso el sugerido es 0,5); con 0,9 se acepta el 96,1 % con 98,9 % de acierto.
+- **`fanta_lata` tiene 30 recortes de train y 4 en val y en test**: sus métricas no son confiables.
+  Hacen falta más datos de esa clase.
+- Son recortes de cajas anotadas en datasets públicos. Falta medirlo sobre recortes que produzca
+  el detector YOLO en fotos de la maqueta (el dominio real).

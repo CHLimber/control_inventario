@@ -446,6 +446,14 @@ def tabla_markdown(filas: list[dict]) -> str:
     return "\n".join(lineas)
 
 
+def _relativa(ruta: Path) -> str:
+    """Ruta relativa a la carpeta del proyecto (para no escribir rutas del usuario en la doc)."""
+    try:
+        return Path(ruta).resolve().relative_to(config.DIR_MODELOS.resolve().parent).as_posix()
+    except ValueError:
+        return Path(ruta).name
+
+
 def comparar_y_elegir(salida: Path, actualizar_doc: bool = False) -> dict | None:
     """Arma comparacion.csv/.md con todos los <modelo>_metricas.json y copia el mejor a clasificador.keras."""
     import pandas as pd
@@ -483,7 +491,7 @@ def comparar_y_elegir(salida: Path, actualizar_doc: bool = False) -> dict | None
         texto = DOC.read_text(encoding="utf-8")
         if MARCA_INI in texto and MARCA_FIN in texto:
             ini, fin = texto.index(MARCA_INI) + len(MARCA_INI), texto.index(MARCA_FIN)
-            nota = f"\n\n_Generada por `scripts/clasificador_entrenar.py` el {datetime.now():%Y-%m-%d %H:%M} desde `{salida}`._\n\n"
+            nota = f"\n\n_Generada por `scripts/clasificador_entrenar.py` el {datetime.now():%Y-%m-%d %H:%M} desde `{_relativa(salida)}`._\n\n"
             DOC.write_text(texto[:ini] + nota + tabla + "\n\n" + texto[fin:], encoding="utf-8")
             print(f"Tabla actualizada en {DOC}")
     return resumen
