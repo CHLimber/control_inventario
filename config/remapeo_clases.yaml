@@ -1,14 +1,184 @@
-# BORRADOR. Lo completa el agente Datos y lo aprueba el orquestador.
-# Formato:  <alias_dataset>: { <clase_original>: <clase_nuestra> | descartar }
-#   - <clase_nuestra> debe existir en config/clases.json.
-#   - Para el detector de una clase, todo lo que no sea "descartar" pasa a "producto".
-#   - "solo_detector" = sirve como "producto" pero no tiene marca/formato confiable
-#     (no entra al multiclase ni a los recortes del clasificador).
+# BORRADOR generado por scripts/datos_remapeo.py y revisado a mano por el agente Datos.
+# Lo APRUEBA el orquestador. Las entradas existentes se respetan al regenerar (salvo --regenerar).
 #
-# Ejemplo:
-# rosd_final_hr:
-#   coke_bottle: coca_botella
-#   coke_can: coca_lata
-#   person: descartar
-#   bottle: solo_detector
-{}
+# Formato:  <alias_dataset>: { <clase_original>: <clase_nuestra> | solo_detector | descartar }
+#   - <clase_nuestra> debe existir en config/clases.json.
+#   - solo_detector = es una bebida/envase y sirve como "producto" para el detector de 1 clase,
+#     pero su marca no es una de las nuestras o no es confiable (no entra al multiclase ni a recortes;
+#     en el multiclase queda como fondo).
+#   - descartar = no es un producto de interés (snacks, vasos, fondo...): la caja se elimina.
+#   - Una clase original que no figure acá se trata como "descartar".
+#
+# Formato por defecto de cada dataset (para clases sin "can"/"bottle" en el nombre):
+#   soda_bottles -> botella (botellas PET vistas desde arriba en heladeras).
+#
+# Qué dataset entra a cada salida (detector / multiclase / recortes) lo decide "usar_en" en
+# src/datos/fuentes.py: lamar_grocery (v9, grises) no se usa; de lamar_grocery_color solo la carpeta train;
+# soda_bottles solo en el detector.
+
+darians_bottle:
+  Bonafont_botella: solo_detector
+  Bottle-Detection: solo_detector  # revisado: botellas de agua
+  Cans: solo_detector  # revisado: latas Arizona (genérica: excluye la imagen del multiclase)
+  Coca_Light_Can: solo_detector  # revisado: lata plateada
+  Coca_Original_Bottle: coca_botella
+  Coca_Original_Can: coca_lata
+  Electrolit_Bottle: solo_detector
+  Fanta_Berry_Can: solo_detector  # revisado: lata azul (sabor berry), no es la Fanta naranja
+  Fanta_Bottle: fanta_botella
+  Fresca_Bottle: solo_detector
+  Gatorade_Bottle: solo_detector
+  Lipton_Bottle: solo_detector
+  Monster_Peach_Can: solo_detector
+  NonBottle: descartar
+  Penafiel_Limon_Bottel: solo_detector
+  Penafiel_Naranjada_Bottle: solo_detector
+  Sprite_Bottle: sprite_botella
+
+rosd_final_hr:
+  7up_can: 7up_lata
+  beer_can: solo_detector
+  coke_bottle: coca_botella
+  coke_can: coca_lata
+  fanta_bottle: fanta_botella
+  juice_can: solo_detector
+  milk_can: solo_detector
+  mirinda_can: solo_detector  # revisado: lata naranja parecida a Fanta, otra marca
+  pepsi_bottle: pepsi_botella
+  pepsi_can: pepsi_lata
+  redbull_can: solo_detector
+  sprite_bottle: sprite_botella
+  sprite_can: sprite_lata
+  tea_bottle: solo_detector
+  tea_can: solo_detector
+  water_bottle: solo_detector
+
+lamar_grocery:
+  BargsBlack20Oz: solo_detector
+  BuenoShareSize: descartar
+  CheetosCrunchy: descartar
+  CheetosCrunchyFlaminHot: descartar
+  CheetosCrunchyFlaminHotLimon: descartar
+  CheetosCrunchyXXTRAFlaminHot: descartar
+  CheetosPuffs: descartar
+  CherryCocaCola20Oz: solo_detector
+  CherryVanillaCocaCola20Oz: solo_detector
+  ChipsAhoy: descartar
+  ChipsAhoyKingSize: descartar
+  CocaCola16Oz: coca_lata  # revisado: lata roja de 16 oz
+  CocaCola20Oz: coca_botella
+  CocaCola350Ml: solo_detector
+  CocaColaSpiced20Oz: solo_detector
+  CocaColaZero16Oz: solo_detector
+  Crunch: descartar
+  Crush16Oz: solo_detector
+  DietCocaCola20Oz: solo_detector
+  DietCokeCan16Oz: solo_detector
+  DoritosCoolRanch: descartar
+  DoritosNachoCheese: descartar
+  DoritosSpicyNacho: descartar
+  DrPapPepper1L: solo_detector
+  DrPapPepper20Oz: solo_detector
+  DrPapPepperCan16Oz: solo_detector
+  Fanta20Oz: fanta_botella
+  FantaCan16Oz: fanta_lata
+  FantaGrape20Oz: solo_detector
+  FantaZero20Oz: solo_detector
+  FunyunsOnionFlavoredRingsFlaminHot: descartar
+  LaysBarbecue: descartar
+  LaysClassic: descartar
+  LaysLimon: descartar
+  LennyLarrysBirthdayCake: descartar
+  LennyLarrysChocolateChips: descartar
+  LennyLarrysDoubleChocolateChips: descartar
+  LennyLarrysPeanutButter: descartar
+  LennyLarrysPeanutButterChocolateChips: descartar
+  LennyLarrysSnickerdoodle: descartar
+  MinuteMaidBlueRaspberry20Oz: solo_detector
+  MinuteMaidFruitPunch: solo_detector
+  MinuteMaidLemonade20Oz: solo_detector
+  MinuteMaidPinkLemonade: solo_detector
+  MountainDew16Oz: solo_detector
+  MtnDew16Oz: solo_detector
+  NerdsShareSize: descartar
+  Oreo: descartar
+  OreoDoubleStufKingSize: descartar
+  OreoKingSize: descartar
+  PaydayShareSize: descartar
+  SkittlesShareSize: descartar
+  SourPunchShareSize: descartar
+  Sprite20Oz: sprite_botella
+  Sprite40Oz: sprite_botella
+  SpriteCan16Oz: sprite_lata
+  SpriteCherry20Oz: solo_detector
+  SpriteTropicalMix20Oz: solo_detector
+  SpriteZero20Oz: solo_detector
+  VanillaCocaCola20Oz: solo_detector
+  WhatchamacallitKingSize: descartar
+  ZeroCocaCola16Oz: solo_detector
+
+lamar_grocery_color:
+  Barg-sBlack-20Oz: solo_detector
+  Bueno-shareSize: descartar
+  Cheetos-Crunchy: descartar
+  Cheetos-Crunchy-Flamin-Hot: descartar
+  Cheetos-Puffs: descartar
+  Cheetos-crunchy-Flamin-Hot-Limon: descartar
+  Cheetos-crunchy-XXTRA-Flamin-Hot: descartar
+  Cherry-Coca-cola 20Oz: solo_detector
+  CherryVanilla-Coca-cola 20Oz: solo_detector
+  Chips-Ahoy: descartar
+  Chips-Ahoy-KingSize: descartar
+  Coca-cola 20Oz: coca_botella
+  CocaCola-16Oz: coca_lata  # revisado: lata roja de 16 oz
+  Crunch: descartar
+  Crush-16Oz: solo_detector
+  DORITOS-Cool-Ranch: descartar
+  DORITOS-Nacho-Cheese: descartar
+  DORITOS-Spicy-Nacho: descartar
+  DietCoca-cola 20Oz: solo_detector
+  Dr.Papper-1L: solo_detector
+  Dr.Papper-Can16oz: solo_detector
+  Fanta-Can16oz: fanta_lata
+  Fanta-Grape-20Oz: solo_detector
+  Fanta20Oz: fanta_botella
+  FantaZero20Oz: solo_detector
+  Funyuns-Onion-flavored-rings-Flamin-hot: descartar
+  Lay-s-Barbecue: descartar
+  Lay-s-Classic: descartar
+  Lay-s-Limon: descartar
+  Lenny-Larry-s-BirthdayCake: descartar
+  Lenny-Larry-s-ChocolateChips: descartar
+  Lenny-Larry-s-DoubleChocolateChips: descartar
+  Lenny-Larry-s-PeanutButter: descartar
+  Lenny-Larry-s-PeanutButter-ChocolateChips: descartar
+  Lenny-Larry-s-Snickerdoodle: descartar
+  MinuteMaid-FruitPunch: solo_detector
+  MinuteMaid-PinkLemonade: solo_detector
+  MinuteMaidBlueRaspberry-20Oz: solo_detector
+  MinuteMaidLemonade-20Oz: solo_detector
+  MtnDew-16Oz: solo_detector
+  Nerds-shareSize: descartar
+  Oreo: descartar
+  Oreo-DoubleStuf-KingSize: descartar
+  Oreo-KingSize: descartar
+  PayDay-shareSize: descartar
+  Skittles-shareSize: descartar
+  SourPunch-shareSize: descartar
+  Spiced-Coca-cola 20Oz: solo_detector
+  Sprite-Can16oz: sprite_lata
+  Sprite-Cherry-20Oz: solo_detector
+  Sprite-TropicalMix-20Oz: solo_detector
+  Sprite-Zero-20Oz: solo_detector
+  Sprite20Oz: sprite_botella
+  Sprite40Oz: sprite_botella
+  Vanilla-Coca-cola 20Oz: solo_detector
+  Whatchamacallit-kingSize: descartar
+  dietCoke-Can16oz: solo_detector
+  skittles-smoothies-shareSize: descartar
+  zeroCocaCola-16Oz: solo_detector  # revisado: etiquetas ruidosas (mezcla con Mtn Dew)
+
+soda_bottles:
+  coca-cola: coca_botella
+  fanta: fanta_botella
+  sprite: sprite_botella
