@@ -135,13 +135,21 @@ pueden entrenar localmente de noche o en Colab (minutos con GPU).
 
 <!-- COMPARACION:INICIO -->
 
-_Generada por `scripts/clasificador_entrenar.py` el 2026-10-16 03:17 desde `modelos/clasificador`._
+_Generada por `scripts/clasificador_entrenar.py` el 2026-10-16 07:28 desde `modelos/clasificador`._
 
 | modelo | entrada | parámetros | épocas | min | val acc | val loss | test acc | test loss | test F1 macro | bot↔lata (test) | sprite↔7up (test) | umbral sug. | n train | prueba |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| mobilenet | 160px | 2.269.513 | 25 | 37.570 | 0.971 | 0.106 | 0.967 | 0.157 | 0.944 | 6 | 1 | 0.500 | 4958 | no |
+| cnn | 128px | 2.603.057 | 10 | 16.350 | 0.866 | 0.389 | 0.870 | 0.433 | 0.845 | 103 | 16 | 0.900 | 10107 | no |
+| cnn_ad | 128px | 6.367.757 | 40 | 72.890 | 0.915 | 0.278 | 0.907 | 0.335 | 0.887 | 82 | 9 | 0.800 | 10107 | no |
+| mobilenet | 160px | 2.269.513 | 25 | 117.360 | 0.935 | 0.217 | 0.918 | 0.247 | 0.899 | 45 | 12 | 0.650 | 10107 | no |
 
 <!-- COMPARACION:FIN -->
+
+> **Nota sobre la caída 0,967 → 0,918.** El primer entrenamiento (4958 recortes de train)
+> usaba un test más chico y más fácil. Con la 2.ª ronda de datos (cold_drinks y again_aug,
+> fotos más variadas) el test cambió, así que las dos cifras no se comparan entre sí; la tabla
+> de arriba compara los tres modelos sobre el MISMO test. La clase más débil es `fanta_lata`
+> (F1 0,79, solo 32 recortes de test): hacen falta más fotos reales de esa lata.
 
 **Estado (2026-10-16):** solo se entrenó `mobilenet` con los datos reales (snapshot de
 `datos/recortes` del 2026-10-15 23:19: 6249 recortes; train 4958 / val 661 / test 630). `cnn` y

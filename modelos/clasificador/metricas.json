@@ -1,0 +1,324 @@
+{
+  "modelo": "mobilenet",
+  "archivo": "clasificador.keras",
+  "tamano_entrada": 160,
+  "entrada": "RGB uint8 0-255, letterbox a cuadrado (src/vision/clasificador_modelos.letterbox)",
+  "clases": [
+    "coca_botella",
+    "coca_lata",
+    "fanta_botella",
+    "fanta_lata",
+    "sprite_botella",
+    "sprite_lata",
+    "pepsi_botella",
+    "pepsi_lata",
+    "7up_lata"
+  ],
+  "umbral_sugerido": 0.65,
+  "umbral_contrato": 0.5,
+  "val": {
+    "n": 1179,
+    "accuracy": 0.9346904156064462,
+    "loss": 0.21737241744995117,
+    "macro_f1": 0.9091275045363769,
+    "confusiones_clave": {
+      "botella_lata": [
+        {
+          "de": "coca_botella",
+          "a": "coca_lata",
+          "n": 5,
+          "tasa": 0.026455026455026454
+        },
+        {
+          "de": "coca_lata",
+          "a": "coca_botella",
+          "n": 1,
+          "tasa": 0.006622516556291391
+        },
+        {
+          "de": "fanta_botella",
+          "a": "fanta_lata",
+          "n": 11,
+          "tasa": 0.051643192488262914
+        },
+        {
+          "de": "fanta_lata",
+          "a": "fanta_botella",
+          "n": 0,
+          "tasa": 0.0
+        },
+        {
+          "de": "pepsi_botella",
+          "a": "pepsi_lata",
+          "n": 9,
+          "tasa": 0.05357142857142857
+        },
+        {
+          "de": "pepsi_lata",
+          "a": "pepsi_botella",
+          "n": 6,
+          "tasa": 0.08571428571428572
+        },
+        {
+          "de": "sprite_botella",
+          "a": "sprite_lata",
+          "n": 6,
+          "tasa": 0.031578947368421054
+        },
+        {
+          "de": "sprite_lata",
+          "a": "sprite_botella",
+          "n": 0,
+          "tasa": 0.0
+        }
+      ],
+      "total_botella_lata": 38,
+      "sprite_7up": [
+        {
+          "de": "sprite_lata",
+          "a": "7up_lata",
+          "n": 8,
+          "tasa": 0.10810810810810811
+        },
+        {
+          "de": "7up_lata",
+          "a": "sprite_lata",
+          "n": 3,
+          "tasa": 0.03296703296703297
+        },
+        {
+          "de": "sprite_botella",
+          "a": "7up_lata",
+          "n": 1,
+          "tasa": 0.005263157894736842
+        },
+        {
+          "de": "7up_lata",
+          "a": "sprite_botella",
+          "n": 1,
+          "tasa": 0.01098901098901099
+        }
+      ],
+      "total_sprite_7up": 13
+    },
+    "barrido_umbral": [
+      {
+        "umbral": 0.3,
+        "cobertura": 1.0,
+        "accuracy_aceptadas": 0.9346904156064462
+      },
+      {
+        "umbral": 0.35,
+        "cobertura": 0.9991518235793045,
+        "accuracy_aceptadas": 0.934634974533107
+      },
+      {
+        "umbral": 0.4,
+        "cobertura": 0.9991518235793045,
+        "accuracy_aceptadas": 0.934634974533107
+      },
+      {
+        "umbral": 0.45,
+        "cobertura": 0.9940627650551315,
+        "accuracy_aceptadas": 0.9360068259385665
+      },
+      {
+        "umbral": 0.5,
+        "cobertura": 0.9864291772688719,
+        "accuracy_aceptadas": 0.937231298366294
+      },
+      {
+        "umbral": 0.55,
+        "cobertura": 0.9796437659033079,
+        "accuracy_aceptadas": 0.9411255411255411
+      },
+      {
+        "umbral": 0.6,
+        "cobertura": 0.9669211195928753,
+        "accuracy_aceptadas": 0.9491228070175438
+      },
+      {
+        "umbral": 0.65,
+        "cobertura": 0.9575911789652247,
+        "accuracy_aceptadas": 0.9530558015943312
+      },
+      {
+        "umbral": 0.7,
+        "cobertura": 0.9448685326547922,
+        "accuracy_aceptadas": 0.9578096947935368
+      },
+      {
+        "umbral": 0.75,
+        "cobertura": 0.9245122985581001,
+        "accuracy_aceptadas": 0.9623853211009175
+      },
+      {
+        "umbral": 0.8,
+        "cobertura": 0.8999151823579304,
+        "accuracy_aceptadas": 0.9707822808671065
+      },
+      {
+        "umbral": 0.85,
+        "cobertura": 0.8804071246819338,
+        "accuracy_aceptadas": 0.9730250481695568
+      },
+      {
+        "umbral": 0.9,
+        "cobertura": 0.8490245971162002,
+        "accuracy_aceptadas": 0.977022977022977
+      },
+      {
+        "umbral": 0.95,
+        "cobertura": 0.7955894826123834,
+        "accuracy_aceptadas": 0.988272921108742
+      }
+    ]
+  },
+  "test": {
+    "n": 1196,
+    "accuracy": 0.9180602006688964,
+    "loss": 0.24750694632530212,
+    "macro_f1": 0.8992632481300189,
+    "confusiones_clave": {
+      "botella_lata": [
+        {
+          "de": "coca_botella",
+          "a": "coca_lata",
+          "n": 5,
+          "tasa": 0.023696682464454975
+        },
+        {
+          "de": "coca_lata",
+          "a": "coca_botella",
+          "n": 4,
+          "tasa": 0.0273972602739726
+        },
+        {
+          "de": "fanta_botella",
+          "a": "fanta_lata",
+          "n": 7,
+          "tasa": 0.03825136612021858
+        },
+        {
+          "de": "fanta_lata",
+          "a": "fanta_botella",
+          "n": 2,
+          "tasa": 0.0625
+        },
+        {
+          "de": "pepsi_botella",
+          "a": "pepsi_lata",
+          "n": 8,
+          "tasa": 0.044444444444444446
+        },
+        {
+          "de": "pepsi_lata",
+          "a": "pepsi_botella",
+          "n": 12,
+          "tasa": 0.1276595744680851
+        },
+        {
+          "de": "sprite_botella",
+          "a": "sprite_lata",
+          "n": 7,
+          "tasa": 0.03804347826086957
+        },
+        {
+          "de": "sprite_lata",
+          "a": "sprite_botella",
+          "n": 0,
+          "tasa": 0.0
+        }
+      ],
+      "total_botella_lata": 45,
+      "sprite_7up": [
+        {
+          "de": "sprite_lata",
+          "a": "7up_lata",
+          "n": 6,
+          "tasa": 0.08450704225352113
+        },
+        {
+          "de": "7up_lata",
+          "a": "sprite_lata",
+          "n": 3,
+          "tasa": 0.031578947368421054
+        },
+        {
+          "de": "sprite_botella",
+          "a": "7up_lata",
+          "n": 0,
+          "tasa": 0.0
+        },
+        {
+          "de": "7up_lata",
+          "a": "sprite_botella",
+          "n": 3,
+          "tasa": 0.031578947368421054
+        }
+      ],
+      "total_sprite_7up": 12
+    }
+  },
+  "prueba": false,
+  "fecha": "2026-10-16T05:30:06",
+  "comparacion": [
+    {
+      "modelo": "cnn",
+      "tamano": 128,
+      "parametros": 2603057,
+      "epocas": 10,
+      "minutos": 16.35,
+      "val_accuracy": 0.866,
+      "val_loss": 0.3889,
+      "val_macro_f1": 0.8285,
+      "test_accuracy": 0.8704,
+      "test_loss": 0.4329,
+      "test_macro_f1": 0.8445,
+      "test_botella_lata": 103,
+      "test_sprite_7up": 16,
+      "umbral_sugerido": 0.9,
+      "n_train": 10107,
+      "prueba": false,
+      "fecha": "2026-10-16T04:00:26"
+    },
+    {
+      "modelo": "cnn_ad",
+      "tamano": 128,
+      "parametros": 6367757,
+      "epocas": 40,
+      "minutos": 72.89,
+      "val_accuracy": 0.9152,
+      "val_loss": 0.2776,
+      "val_macro_f1": 0.8918,
+      "test_accuracy": 0.9072,
+      "test_loss": 0.3345,
+      "test_macro_f1": 0.8875,
+      "test_botella_lata": 82,
+      "test_sprite_7up": 9,
+      "umbral_sugerido": 0.8,
+      "n_train": 10107,
+      "prueba": false,
+      "fecha": "2026-10-16T04:16:59"
+    },
+    {
+      "modelo": "mobilenet",
+      "tamano": 160,
+      "parametros": 2269513,
+      "epocas": 25,
+      "minutos": 117.36,
+      "val_accuracy": 0.9347,
+      "val_loss": 0.2174,
+      "val_macro_f1": 0.9091,
+      "test_accuracy": 0.9181,
+      "test_loss": 0.2475,
+      "test_macro_f1": 0.8993,
+      "test_botella_lata": 45,
+      "test_sprite_7up": 12,
+      "umbral_sugerido": 0.65,
+      "n_train": 10107,
+      "prueba": false,
+      "fecha": "2026-10-16T05:30:06"
+    }
+  ]
+}

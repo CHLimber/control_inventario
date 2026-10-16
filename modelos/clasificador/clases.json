@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "descripcion": "FUENTE DE VERDAD de las clases. El orden de 'clases' es el índice de salida de los modelos (softmax del clasificador y clases del YOLO multiclase). No reordenar sin reentrenar.",
+  "clases": [
+    {"id": 0, "clase": "coca_botella",   "nombre": "Coca-Cola botella", "marca": "Coca-Cola", "formato": "botella"},
+    {"id": 1, "clase": "coca_lata",      "nombre": "Coca-Cola lata",    "marca": "Coca-Cola", "formato": "lata"},
+    {"id": 2, "clase": "fanta_botella",  "nombre": "Fanta botella",     "marca": "Fanta",     "formato": "botella"},
+    {"id": 3, "clase": "fanta_lata",     "nombre": "Fanta lata",        "marca": "Fanta",     "formato": "lata"},
+    {"id": 4, "clase": "sprite_botella", "nombre": "Sprite botella",    "marca": "Sprite",    "formato": "botella"},
+    {"id": 5, "clase": "sprite_lata",    "nombre": "Sprite lata",       "marca": "Sprite",    "formato": "lata"},
+    {"id": 6, "clase": "pepsi_botella",  "nombre": "Pepsi botella",     "marca": "Pepsi",     "formato": "botella"},
+    {"id": 7, "clase": "pepsi_lata",     "nombre": "Pepsi lata",        "marca": "Pepsi",     "formato": "lata"},
+    {"id": 8, "clase": "7up_lata",       "nombre": "7Up lata",          "marca": "7Up",       "formato": "lata"}
+  ],
+  "desconocido": {"clase": "desconocido", "nombre": "No reconocido"},
+  "detector_1clase": {"id": 0, "clase": "producto", "nombre": "Producto"}
+}
