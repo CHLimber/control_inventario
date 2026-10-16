@@ -1,4 +1,4 @@
-# BORRADOR generado por scripts/datos_remapeo.py y revisado a mano por el agente Datos.
+# APROBADO por el orquestador (2026-10-15). Generado por scripts/datos_remapeo.py y revisado a mano por el agente Datos.
 # Lo APRUEBA el orquestador. Las entradas existentes se respetan al regenerar (salvo --regenerar).
 #
 # Formato:  <alias_dataset>: { <clase_original>: <clase_nuestra> | solo_detector | descartar }
