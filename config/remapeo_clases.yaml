@@ -1,0 +1,14 @@
+# BORRADOR. Lo completa el agente Datos y lo aprueba el orquestador.
+# Formato:  <alias_dataset>: { <clase_original>: <clase_nuestra> | descartar }
+#   - <clase_nuestra> debe existir en config/clases.json.
+#   - Para el detector de una clase, todo lo que no sea "descartar" pasa a "producto".
+#   - "solo_detector" = sirve como "producto" pero no tiene marca/formato confiable
+#     (no entra al multiclase ni a los recortes del clasificador).
+#
+# Ejemplo:
+# rosd_final_hr:
+#   coke_bottle: coca_botella
+#   coke_can: coca_lata
+#   person: descartar
+#   bottle: solo_detector
+{}

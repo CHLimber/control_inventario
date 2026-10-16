@@ -1,0 +1,42 @@
+# Secretos
+.env
+
+# Datos pesados o generados
+data/raw/
+datos/raw/
+datos/fusion/
+datos/recortes/
+data/sinteticos/
+datos/sinteticos/
+datos/escaneos/
+datos/viabilidad/salidas/
+runs/
+logs/
+
+# Modelos
+*.pt
+*.h5
+*.keras
+*.onnx
+
+# Base de datos
+*.db
+*.sqlite
+*.sqlite3
+
+# Fotos de la maqueta (pesadas); escenas.csv y escenas_plan.csv SÍ se versionan
+datos/maqueta/**/*.jpg
+datos/maqueta/**/*.jpeg
+datos/maqueta/**/*.png
+datos/maqueta/**/*.heic
+
+# Certificados locales
+certs/
+*.pem
+
+# Python / Jupyter
+__pycache__/
+*.pyc
+.pytest_cache/
+.ipynb_checkpoints/
+.vscode/

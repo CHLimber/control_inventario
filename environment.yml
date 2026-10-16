@@ -1,0 +1,44 @@
+# Entorno conda del proyecto "control de inventario por visión".
+# Crear:      conda env create -f environment.yml
+# Actualizar: conda env update -f environment.yml --prune
+# Solo conda-forge: evita los términos de servicio de los canales "defaults" de Anaconda.
+# NUNCA instalar nada en "base".
+name: inventariovision
+channels:
+  - conda-forge
+  - nodefaults
+dependencies:
+  - python=3.12
+  - pip
+  # tensorboard 2.20 todavía importa pkg_resources, que setuptools quitó en la 81.
+  - setuptools<81
+  - pip:
+      # Visión: detector YOLO (trae PyTorch; en Windows sin NVIDIA instala la versión CPU)
+      - ultralytics
+      # Clasificador CNN (Keras). Desde TF 2.20 tensorboard NO viene incluido.
+      - tensorflow==2.20.*
+      - tensorboard
+      # Datos e imágenes
+      - opencv-python
+      - numpy
+      - pandas
+      - matplotlib
+      - pillow
+      - rembg[cpu]
+      - imagehash
+      - pyyaml
+      - scikit-learn
+      - roboflow
+      # Backend
+      - fastapi
+      - uvicorn[standard]
+      - python-multipart
+      - sqlalchemy
+      - pydantic
+      - python-dotenv
+      - anthropic
+      - httpx
+      # Notebooks y tests
+      - pytest
+      - ipykernel
+      - notebook
