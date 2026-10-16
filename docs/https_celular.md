@@ -55,10 +55,10 @@ El script:
 
 ```bat
 conda activate inventariovision
-uvicorn src.api.app:app --host 0.0.0.0 --port 8443 --ssl-keyfile certs\servidor-key.pem --ssl-certfile certs\servidor.pem
+uvicorn src.api.main:app --host 0.0.0.0 --port 8443 --ssl-keyfile certs\servidor-key.pem --ssl-certfile certs\servidor.pem
 ```
 
-(ajustar `src.api.app:app` al módulo real de la aplicación FastAPI). La primera vez, Windows
+(ajustar `src.api.main:app` al módulo real de la aplicación FastAPI). La primera vez, Windows
 puede preguntar si permite a Python en redes privadas: aceptar. Si el celular no llega,
 revisar que la red esté como *Privada* y que el firewall deje pasar el puerto 8443.
 
@@ -118,7 +118,7 @@ winget install Cloudflare.cloudflared
 En una consola, la API por HTTP normal:
 
 ```bat
-uvicorn src.api.app:app --host 127.0.0.1 --port 8000
+uvicorn src.api.main:app --host 127.0.0.1 --port 8000
 ```
 
 En otra consola:

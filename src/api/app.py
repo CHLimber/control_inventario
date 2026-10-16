@@ -104,4 +104,5 @@ def crear_app(url_bd: str | None = None, pipeline: Any = None,
     app.mount(PREFIJO_URL_ESCANEOS, EstaticosOpcionales(dir_escaneos), name="escaneos")
     app.mount("/escaner", EstaticosOpcionales(dir_web / "escaner", html=True), name="escaner")
     app.mount("/panel", EstaticosOpcionales(dir_web / "panel", html=True), name="panel")
+    app.mount("/comun", EstaticosOpcionales(dir_web / "comun"), name="comun")
     return app

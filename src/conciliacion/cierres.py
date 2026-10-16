@@ -57,7 +57,8 @@ def calcular_totales(detalles: Iterable[CierreDetalle]) -> dict[str, int]:
     detalles = list(detalles)
     return {
         "esperado": sum(d.esperado for d in detalles),
-        "detectado": sum(d.detectado for d in detalles),
+        # Conteo final: lo ajustado por el cajero si ya confirmó; así esperado + diferencia = detectado.
+        "detectado": sum(d.detectado if d.ajustado is None else d.ajustado for d in detalles),
         "diferencia": sum(d.diferencia for d in detalles),
         "productos_con_diferencia": sum(1 for d in detalles if d.diferencia != 0),
     }

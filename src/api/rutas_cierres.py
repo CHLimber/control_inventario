@@ -164,6 +164,7 @@ def listar_diferencias(id_producto: int | None = None,
     consulta = (select(CierreDetalle, Cierre.fecha, Producto.nombre)
                 .join(Cierre, CierreDetalle.id_cierre == Cierre.id)
                 .join(Producto, CierreDetalle.id_producto == Producto.id)
+                .where(Cierre.estado == "confirmado")   # solo diferencias reales (confirmadas)
                 .order_by(Cierre.fecha, Cierre.id, Producto.id))
     if id_producto is not None:
         consulta = consulta.where(CierreDetalle.id_producto == id_producto)

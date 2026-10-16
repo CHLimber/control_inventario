@@ -55,7 +55,7 @@ echo ===========================================================================
 echo  Listo. Certificado en certs\servidor.pem y certs\servidor-key.pem
 echo.
 echo  Lanzar la API con HTTPS:
-echo    uvicorn src.api.app:app --host 0.0.0.0 --port 8443 --ssl-keyfile certs\servidor-key.pem --ssl-certfile certs\servidor.pem
+echo    uvicorn src.api.main:app --host 0.0.0.0 --port 8443 --ssl-keyfile certs\servidor-key.pem --ssl-certfile certs\servidor.pem
 echo.
 echo  En el celular (misma red Wi-Fi):  https://%IP%:8443/escaner/
 echo.
