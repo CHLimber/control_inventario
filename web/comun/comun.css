@@ -1,0 +1,31 @@
+/* Estilos compartidos (escáner y panel). Base: Bootstrap 5.3.3. */
+:root {
+  --color-faltante: #f8d7da;
+  --color-faltante-borde: #dc3545;
+  --color-sobrante: #ffe5c2;
+  --color-sobrante-borde: #fd7e14;
+}
+
+/* Filas de conciliación: faltante en rojo, sobrante en naranja. */
+.tabla-conciliacion tr.fila-faltante > td { background-color: var(--color-faltante); }
+.tabla-conciliacion tr.fila-faltante > td:first-child { box-shadow: inset 4px 0 0 var(--color-faltante-borde); }
+.tabla-conciliacion tr.fila-sobrante > td { background-color: var(--color-sobrante); }
+.tabla-conciliacion tr.fila-sobrante > td:first-child { box-shadow: inset 4px 0 0 var(--color-sobrante-borde); }
+.badge-sobrante { background-color: var(--color-sobrante-borde); color: #fff; }
+.tabla-conciliacion .input-conteo { max-width: 5.5rem; margin-left: auto; font-size: 1rem; }
+.tabla-conciliacion .input-conteo.editado { border-color: #0d6efd; background-color: #e7f1ff; font-weight: 600; }
+
+/* Imagen anotada: se toca para ampliar. */
+.imagen-anotada { width: 100%; height: auto; border-radius: .5rem; cursor: zoom-in; background: #222; display: block; }
+.visor-cuerpo { overflow: auto; display: flex; align-items: flex-start; justify-content: center; touch-action: pan-x pan-y pinch-zoom; }
+.visor-cuerpo img { width: 100%; max-width: 100%; height: auto; cursor: zoom-in; margin: auto; }
+.visor-cuerpo img.zoom { width: 250%; max-width: none; cursor: zoom-out; margin: 0; }
+
+/* Overlay de carga */
+.overlay-carga {
+  position: fixed; inset: 0; z-index: 1080; background: rgba(0, 0, 0, .6);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; color: #fff; gap: 1rem;
+}
+.overlay-carga[hidden] { display: none; }
+
+.banner-simulado { border-style: dashed; }

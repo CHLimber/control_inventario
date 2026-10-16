@@ -1,0 +1,294 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="data:,">
+  <title>Panel · Control de inventario por visión</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="../comun/comun.css">
+  <style>
+    body { background: #f3f4f6; }
+    .nav-tabs .nav-link { white-space: nowrap; }
+    .nav-scroll { overflow-x: auto; overflow-y: hidden; flex-wrap: nowrap; }
+    #lista-cierres tbody tr { cursor: pointer; }
+    .chat { max-height: 60vh; overflow-y: auto; }
+    .burbuja { max-width: 85%; border-radius: 1rem; padding: .6rem .9rem; }
+    .burbuja-usuario { background: #0d6efd; color: #fff; margin-left: auto; border-bottom-right-radius: .25rem; }
+    .burbuja-asistente { background: #fff; border: 1px solid #dee2e6; border-bottom-left-radius: .25rem; }
+    .burbuja-error { background: #f8d7da; border: 1px solid #f1aeb5; }
+    .grafico-caja { position: relative; height: 320px; }
+    .td-num { text-align: end; font-variant-numeric: tabular-nums; }
+  </style>
+</head>
+<body>
+  <nav class="navbar navbar-dark bg-dark">
+    <div class="container-xl">
+      <span class="navbar-brand mb-0 h1 fs-5"><i class="bi bi-box-seam me-2"></i>Control de inventario por visión</span>
+      <a class="link-light small" href="../escaner/"><i class="bi bi-phone me-1"></i>Escáner</a>
+    </div>
+  </nav>
+
+  <main class="container-xl py-3">
+    <div id="banner-modo"></div>
+
+    <ul class="nav nav-tabs nav-scroll mb-3" id="pestanas" role="tablist">
+      <li class="nav-item" role="presentation"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-productos" data-hash="productos" type="button" role="tab"><i class="bi bi-tags me-1"></i>Productos</button></li>
+      <li class="nav-item" role="presentation"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-movimientos" data-hash="movimientos" type="button" role="tab"><i class="bi bi-arrow-left-right me-1"></i>Movimientos</button></li>
+      <li class="nav-item" role="presentation"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-stock" data-hash="stock" type="button" role="tab"><i class="bi bi-boxes me-1"></i>Stock</button></li>
+      <li class="nav-item" role="presentation"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-cierres" data-hash="cierres" type="button" role="tab"><i class="bi bi-clipboard-check me-1"></i>Cierres</button></li>
+      <li class="nav-item" role="presentation"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-historial" data-hash="historial" type="button" role="tab"><i class="bi bi-graph-down me-1"></i>Historial</button></li>
+      <li class="nav-item" role="presentation"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-asistente" data-hash="asistente" type="button" role="tab"><i class="bi bi-chat-dots me-1"></i>Asistente</button></li>
+    </ul>
+
+    <div class="tab-content">
+      <!-- ============================== PRODUCTOS -->
+      <section class="tab-pane fade show active" id="tab-productos" role="tabpanel">
+        <div id="avisos-productos"></div>
+        <div class="d-flex flex-wrap gap-2 align-items-center mb-2">
+          <button type="button" class="btn btn-primary" id="btn-nuevo-producto"><i class="bi bi-plus-lg me-1"></i>Nuevo producto</button>
+          <div class="form-check ms-2">
+            <input class="form-check-input" type="checkbox" id="chk-inactivos">
+            <label class="form-check-label" for="chk-inactivos">Mostrar dados de baja</label>
+          </div>
+        </div>
+        <div class="card"><div class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead class="table-light"><tr><th>#</th><th>Nombre</th><th>Marca</th><th>Formato</th><th class="text-end">Precio</th><th>Clase del modelo</th><th>Estado</th><th class="text-end">Acciones</th></tr></thead>
+            <tbody id="tbody-productos"></tbody>
+          </table>
+        </div></div>
+      </section>
+
+      <!-- ============================== MOVIMIENTOS -->
+      <section class="tab-pane fade" id="tab-movimientos" role="tabpanel">
+        <div id="avisos-movimientos"></div>
+        <div class="card mb-3">
+          <div class="card-header fw-semibold">Registrar movimiento</div>
+          <div class="card-body">
+            <form id="form-movimiento" class="row g-2 align-items-end" novalidate>
+              <div class="col-12 col-md-3">
+                <label class="form-label small mb-1" for="mov-producto">Producto</label>
+                <select class="form-select" id="mov-producto" required></select>
+              </div>
+              <div class="col-6 col-md-2">
+                <label class="form-label small mb-1" for="mov-tipo">Tipo</label>
+                <select class="form-select" id="mov-tipo">
+                  <option value="venta">Venta</option>
+                  <option value="entrada">Entrada</option>
+                  <option value="ajuste">Ajuste (±)</option>
+                  <option value="stock_inicial">Stock inicial</option>
+                </select>
+              </div>
+              <div class="col-6 col-md-2">
+                <label class="form-label small mb-1" for="mov-cantidad">Cantidad</label>
+                <input type="number" class="form-control" id="mov-cantidad" step="1" min="1" value="1" required>
+              </div>
+              <div class="col-6 col-md-2">
+                <label class="form-label small mb-1" for="mov-fecha">Fecha <span class="text-body-secondary">(vacío = ahora)</span></label>
+                <input type="datetime-local" class="form-control" id="mov-fecha">
+              </div>
+              <div class="col-6 col-md-1">
+                <label class="form-label small mb-1" for="mov-usuario">Usuario</label>
+                <input type="text" class="form-control" id="mov-usuario" value="cajero" maxlength="50">
+              </div>
+              <div class="col-12 col-md-2 d-grid">
+                <button type="submit" class="btn btn-success"><i class="bi bi-plus-circle me-1"></i>Registrar</button>
+              </div>
+              <div class="col-12 small text-body-secondary" id="mov-ayuda">La cantidad debe ser mayor que 0.</div>
+            </form>
+          </div>
+        </div>
+
+        <form id="filtros-movimientos" class="row g-2 align-items-end mb-2">
+          <div class="col-6 col-md-2"><label class="form-label small mb-1" for="fm-desde">Desde</label><input type="date" class="form-control form-control-sm" id="fm-desde"></div>
+          <div class="col-6 col-md-2"><label class="form-label small mb-1" for="fm-hasta">Hasta</label><input type="date" class="form-control form-control-sm" id="fm-hasta"></div>
+          <div class="col-6 col-md-3"><label class="form-label small mb-1" for="fm-producto">Producto</label><select class="form-select form-select-sm" id="fm-producto"></select></div>
+          <div class="col-6 col-md-2"><label class="form-label small mb-1" for="fm-tipo">Tipo</label>
+            <select class="form-select form-select-sm" id="fm-tipo"><option value="">Todos</option><option value="venta">Venta</option><option value="entrada">Entrada</option><option value="ajuste">Ajuste</option><option value="stock_inicial">Stock inicial</option></select></div>
+          <div class="col-12 col-md-3 d-flex gap-2"><button class="btn btn-sm btn-primary flex-fill" type="submit"><i class="bi bi-funnel me-1"></i>Filtrar</button><button class="btn btn-sm btn-outline-secondary" type="reset">Limpiar</button></div>
+        </form>
+        <div class="card"><div class="table-responsive">
+          <table class="table table-sm table-hover align-middle mb-0">
+            <thead class="table-light"><tr><th>#</th><th>Fecha</th><th>Producto</th><th>Tipo</th><th class="text-end">Cantidad</th><th>Usuario</th><th>Cierre</th></tr></thead>
+            <tbody id="tbody-movimientos"></tbody>
+          </table>
+        </div></div>
+        <div class="small text-body-secondary mt-1" id="pie-movimientos"></div>
+      </section>
+
+      <!-- ============================== STOCK -->
+      <section class="tab-pane fade" id="tab-stock" role="tabpanel">
+        <div id="avisos-stock"></div>
+        <form id="form-stock" class="row g-2 align-items-end mb-2">
+          <div class="col-8 col-md-3"><label class="form-label small mb-1" for="stock-fecha">Stock al final del día</label><input type="date" class="form-control" id="stock-fecha"></div>
+          <div class="col-4 col-md-2 d-grid"><button class="btn btn-primary" type="submit">Consultar</button></div>
+          <div class="col-12 col-md-2 d-grid"><button class="btn btn-outline-secondary" type="button" id="btn-stock-ahora">Ahora</button></div>
+        </form>
+        <div class="small text-body-secondary mb-2" id="stock-titulo"></div>
+        <div class="card"><div class="table-responsive">
+          <table class="table table-sm table-hover align-middle mb-0">
+            <thead class="table-light"><tr><th>Producto</th><th>Clase</th><th class="text-end">Inicial</th><th class="text-end">Entradas</th><th class="text-end">Ventas</th><th class="text-end">Ajustes</th><th class="text-end">Stock</th></tr></thead>
+            <tbody id="tbody-stock"></tbody>
+            <tfoot class="table-group-divider fw-bold" id="tfoot-stock"></tfoot>
+          </table>
+        </div></div>
+      </section>
+
+      <!-- ============================== CIERRES -->
+      <section class="tab-pane fade" id="tab-cierres" role="tabpanel">
+        <div id="avisos-cierres"></div>
+        <div id="vista-lista-cierres">
+          <form id="filtros-cierres" class="row g-2 align-items-end mb-2">
+            <div class="col-6 col-md-2"><label class="form-label small mb-1" for="fc-desde">Desde</label><input type="date" class="form-control form-control-sm" id="fc-desde"></div>
+            <div class="col-6 col-md-2"><label class="form-label small mb-1" for="fc-hasta">Hasta</label><input type="date" class="form-control form-control-sm" id="fc-hasta"></div>
+            <div class="col-6 col-md-2"><label class="form-label small mb-1" for="fc-estado">Estado</label>
+              <select class="form-select form-select-sm" id="fc-estado"><option value="">Todos</option><option value="pendiente">Pendiente</option><option value="confirmado">Confirmado</option></select></div>
+            <div class="col-6 col-md-3 d-flex gap-2"><button class="btn btn-sm btn-primary flex-fill" type="submit"><i class="bi bi-funnel me-1"></i>Filtrar</button><button class="btn btn-sm btn-outline-secondary" type="reset">Limpiar</button></div>
+          </form>
+          <div class="card"><div class="table-responsive">
+            <table class="table table-sm table-hover align-middle mb-0" id="lista-cierres">
+              <thead class="table-light"><tr><th>#</th><th>Fecha</th><th>Usuario</th><th>Estado</th><th>Modelo</th><th class="text-end">Esperado</th><th class="text-end">Contado</th><th class="text-end">Diferencia</th><th class="text-end">Prod. con dif.</th></tr></thead>
+              <tbody id="tbody-cierres"></tbody>
+            </table>
+          </div></div>
+          <div class="small text-body-secondary mt-1">Hacé clic en un cierre para ver el detalle.</div>
+        </div>
+
+        <div id="vista-detalle-cierre" class="d-none">
+          <button type="button" class="btn btn-sm btn-outline-secondary mb-2" id="btn-volver-cierres"><i class="bi bi-arrow-left me-1"></i>Volver a la lista</button>
+          <div class="row g-3">
+            <div class="col-lg-6">
+              <div class="card h-100"><div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                  <div><h2 class="h5 mb-0" id="dc-titulo"></h2><div class="small text-body-secondary" id="dc-meta"></div></div>
+                  <span id="dc-estado"></span>
+                </div>
+                <img id="dc-imagen" class="imagen-anotada" alt="Imagen anotada del cierre">
+                <div class="small text-body-secondary mt-1"><i class="bi bi-zoom-in"></i> Clic para ampliar.</div>
+                <div class="d-flex gap-2 flex-wrap mt-2" id="dc-originales"></div>
+                <div id="dc-no-reconocidos" class="mt-2"></div>
+              </div></div>
+            </div>
+            <div class="col-lg-6">
+              <div class="card h-100"><div class="card-body">
+                <h3 class="h6">Conciliación</h3>
+                <div id="dc-tabla"></div>
+                <div id="dc-confirmar" class="d-none">
+                  <label for="dc-observacion" class="form-label small mb-1">Observación (opcional)</label>
+                  <textarea class="form-control mb-2" id="dc-observacion" rows="2" maxlength="500"></textarea>
+                  <button type="button" class="btn btn-primary w-100" id="btn-dc-confirmar"><i class="bi bi-check2-circle me-1"></i>Confirmar cierre</button>
+                </div>
+                <div id="dc-observacion-ver" class="small"></div>
+              </div></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================== HISTORIAL -->
+      <section class="tab-pane fade" id="tab-historial" role="tabpanel">
+        <div id="avisos-historial"></div>
+        <form id="filtros-historial" class="row g-2 align-items-end mb-3">
+          <div class="col-12 col-md-3"><label class="form-label small mb-1" for="fh-producto">Producto</label><select class="form-select form-select-sm" id="fh-producto"></select></div>
+          <div class="col-6 col-md-2"><label class="form-label small mb-1" for="fh-desde">Desde</label><input type="date" class="form-control form-control-sm" id="fh-desde"></div>
+          <div class="col-6 col-md-2"><label class="form-label small mb-1" for="fh-hasta">Hasta</label><input type="date" class="form-control form-control-sm" id="fh-hasta"></div>
+          <div class="col-12 col-md-3 d-flex gap-2"><button class="btn btn-sm btn-primary flex-fill" type="submit"><i class="bi bi-funnel me-1"></i>Filtrar</button><button class="btn btn-sm btn-outline-secondary" type="reset">Limpiar</button></div>
+        </form>
+        <div class="row g-3">
+          <div class="col-lg-7">
+            <div class="card h-100"><div class="card-body">
+              <h2 class="h6">Diferencia por cierre (negativo = faltante)</h2>
+              <div class="grafico-caja"><canvas id="grafico-historial" aria-label="Gráfico de diferencias por cierre" role="img"></canvas></div>
+              <div class="small text-body-secondary d-none" id="grafico-no-disponible">No se pudo cargar Chart.js (sin internet): se muestran solo las tablas.</div>
+            </div></div>
+          </div>
+          <div class="col-lg-5">
+            <div class="card h-100"><div class="card-body">
+              <h2 class="h6">Resumen por producto</h2>
+              <div class="table-responsive"><table class="table table-sm mb-0">
+                <thead><tr><th>Producto</th><th class="text-end">Cierres</th><th class="text-end">Faltante</th><th class="text-end">Sobrante</th><th class="text-end">Neto</th></tr></thead>
+                <tbody id="tbody-resumen-historial"></tbody>
+              </table></div>
+            </div></div>
+          </div>
+        </div>
+        <div class="card mt-3"><div class="table-responsive">
+          <table class="table table-sm table-hover align-middle mb-0">
+            <thead class="table-light"><tr><th>Cierre</th><th>Fecha</th><th>Producto</th><th class="text-end">Esperado</th><th class="text-end">Detectado</th><th class="text-end">Ajustado</th><th class="text-end">Diferencia</th></tr></thead>
+            <tbody id="tbody-historial"></tbody>
+          </table>
+        </div></div>
+      </section>
+
+      <!-- ============================== ASISTENTE -->
+      <section class="tab-pane fade" id="tab-asistente" role="tabpanel">
+        <div class="card">
+          <div class="card-body">
+            <div class="chat d-flex flex-column gap-2 mb-3" id="chat" aria-live="polite">
+              <div class="burbuja burbuja-asistente">Hola. Preguntame sobre el inventario y las diferencias de los cierres.</div>
+            </div>
+            <div class="d-flex flex-wrap gap-1 mb-2" id="sugerencias">
+              <button type="button" class="btn btn-sm btn-outline-secondary">¿Qué productos faltaron esta semana?</button>
+              <button type="button" class="btn btn-sm btn-outline-secondary">¿Cuánto stock queda de Fanta lata?</button>
+              <button type="button" class="btn btn-sm btn-outline-secondary">¿Cómo salió el último cierre?</button>
+            </div>
+            <form id="form-asistente" class="d-flex gap-2">
+              <input type="text" class="form-control" id="input-pregunta" maxlength="500" placeholder="Escribí tu pregunta…" autocomplete="off" required>
+              <button type="submit" class="btn btn-primary" id="btn-preguntar"><i class="bi bi-send"></i><span class="d-none d-sm-inline ms-1">Preguntar</span></button>
+            </form>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <!-- Modal de producto -->
+  <div class="modal fade" id="modal-producto" tabindex="-1" aria-labelledby="titulo-modal-producto" aria-hidden="true">
+    <div class="modal-dialog">
+      <form class="modal-content" id="form-producto" novalidate>
+        <div class="modal-header">
+          <h2 class="modal-title fs-5" id="titulo-modal-producto">Producto</h2>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+        <div class="modal-body">
+          <div id="avisos-modal-producto"></div>
+          <input type="hidden" id="prod-id">
+          <div class="mb-2">
+            <label class="form-label small mb-1" for="prod-clase">Clase del modelo</label>
+            <select class="form-select" id="prod-clase" required></select>
+            <div class="form-text">Une el producto con lo que reconoce el modelo (<code>config/clases.json</code>). Debe ser única.</div>
+          </div>
+          <div class="mb-2"><label class="form-label small mb-1" for="prod-nombre">Nombre</label><input type="text" class="form-control" id="prod-nombre" maxlength="100" required></div>
+          <div class="row g-2 mb-2">
+            <div class="col-6"><label class="form-label small mb-1" for="prod-marca">Marca</label><input type="text" class="form-control" id="prod-marca" maxlength="50" required></div>
+            <div class="col-6"><label class="form-label small mb-1" for="prod-formato">Formato</label>
+              <select class="form-select" id="prod-formato"><option value="botella">Botella</option><option value="lata">Lata</option></select></div>
+          </div>
+          <div class="row g-2 align-items-end">
+            <div class="col-6"><label class="form-label small mb-1" for="prod-precio">Precio (Bs)</label><input type="number" class="form-control" id="prod-precio" min="0" step="0.01" required></div>
+            <div class="col-6"><div class="form-check mb-2"><input class="form-check-input" type="checkbox" id="prod-activo" checked><label class="form-check-label" for="prod-activo">Activo</label></div></div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-primary" id="btn-guardar-producto">Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="overlay-carga" id="overlay" hidden>
+    <div class="spinner-border" style="width:3rem;height:3rem" role="status"></div>
+    <div id="overlay-texto">Cargando…</div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="../comun/simulador.js"></script>
+  <script src="../comun/api.js"></script>
+  <script src="../comun/ui.js"></script>
+  <script src="panel.js"></script>
+</body>
+</html>
