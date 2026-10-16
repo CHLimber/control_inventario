@@ -1,6 +1,7 @@
 """Recortes por caja para el clasificador CNN: DIR_DATOS/recortes/<split>/<clase>/*.jpg.
 
-Filtros (en este orden): caja chica -> borrosa (varianza del Laplaciano) -> duplicada (pHash).
+Filtros (en este orden): caja chica -> color incoherente con la clase (scripts/datos_color.py) ->
+borrosa (varianza del Laplaciano) -> duplicada (pHash).
 Cada caja candidata deja una fila en el índice CSV, con el motivo de descarte si no se guardó.
 """
 from __future__ import annotations
@@ -43,7 +44,8 @@ def nitidez(recorte: Image.Image) -> float:
 
 def generar(sel: pd.DataFrame, dir_raw: Path, dir_salida: Path, remapeo: dict,
             nombres_por_alias: dict[str, list[str]], clases: list[str], margen: float = 0.05,
-            min_lado: int = 32, min_nitidez: float = 40.0, calidad_jpeg: int = 92) -> pd.DataFrame:
+            min_lado: int = 32, min_nitidez: float = 40.0, calidad_jpeg: int = 92,
+            rechazos_color: dict[tuple[str, int], str] | None = None) -> pd.DataFrame:
     """Genera los recortes de las imágenes seleccionadas (columnas: alias, ruta, grupo, split).
 
     Se procesa train antes que val/test: si un recorte de val/test es idéntico (pHash) a uno ya
@@ -52,6 +54,7 @@ def generar(sel: pd.DataFrame, dir_raw: Path, dir_salida: Path, remapeo: dict,
     for split in SPLITS:
         shutil.rmtree(dir_salida / split, ignore_errors=True)
     vistos: dict[str, tuple[str, str]] = {}  # phash -> (split, clase)
+    rechazos_color = rechazos_color or {}
     filas = []
     orden = {s: i for i, s in enumerate(SPLITS)}
     sel = sel.sort_values(["split", "alias", "ruta"], key=lambda c: c.map(orden) if c.name == "split" else c)
@@ -78,6 +81,10 @@ def generar(sel: pd.DataFrame, dir_raw: Path, dir_salida: Path, remapeo: dict,
             fila["ancho"], fila["alto"] = bw, bh
             if min(bw, bh) < min_lado:
                 fila["motivo_descarte"] = "chica"
+                filas.append(fila)
+                continue
+            if (r.ruta, i) in rechazos_color:
+                fila["motivo_descarte"] = rechazos_color[(r.ruta, i)]
                 filas.append(fila)
                 continue
             fila["nitidez"] = round(nitidez(recorte), 1)

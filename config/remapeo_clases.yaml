@@ -1,4 +1,5 @@
-# APROBADO por el orquestador (2026-10-15). Generado por scripts/datos_remapeo.py y revisado a mano por el agente Datos.
+# Generado por scripts/datos_remapeo.py y revisado a mano. APROBADO (1.ª ronda); cold_drinks y
+# again_aug (2.ª ronda) pendientes de aprobación.
 # Lo APRUEBA el orquestador. Las entradas existentes se respetan al regenerar (salvo --regenerar).
 #
 # Formato:  <alias_dataset>: { <clase_original>: <clase_nuestra> | solo_detector | descartar }
@@ -18,13 +19,13 @@
 
 darians_bottle:
   Bonafont_botella: solo_detector
-  Bottle-Detection: solo_detector  # revisado: botellas de agua
-  Cans: solo_detector  # revisado: latas Arizona (genérica: excluye la imagen del multiclase)
-  Coca_Light_Can: solo_detector  # revisado: lata plateada
+  Bottle-Detection: solo_detector
+  Cans: solo_detector
+  Coca_Light_Can: solo_detector
   Coca_Original_Bottle: coca_botella
   Coca_Original_Can: coca_lata
   Electrolit_Bottle: solo_detector
-  Fanta_Berry_Can: solo_detector  # revisado: lata azul (sabor berry), no es la Fanta naranja
+  Fanta_Berry_Can: solo_detector
   Fanta_Bottle: fanta_botella
   Fresca_Bottle: solo_detector
   Gatorade_Bottle: solo_detector
@@ -43,7 +44,7 @@ rosd_final_hr:
   fanta_bottle: fanta_botella
   juice_can: solo_detector
   milk_can: solo_detector
-  mirinda_can: solo_detector  # revisado: lata naranja parecida a Fanta, otra marca
+  mirinda_can: solo_detector
   pepsi_bottle: pepsi_botella
   pepsi_can: pepsi_lata
   redbull_can: solo_detector
@@ -65,7 +66,7 @@ lamar_grocery:
   CherryVanillaCocaCola20Oz: solo_detector
   ChipsAhoy: descartar
   ChipsAhoyKingSize: descartar
-  CocaCola16Oz: coca_lata  # revisado: lata roja de 16 oz
+  CocaCola16Oz: coca_lata
   CocaCola20Oz: coca_botella
   CocaCola350Ml: solo_detector
   CocaColaSpiced20Oz: solo_detector
@@ -130,7 +131,7 @@ lamar_grocery_color:
   Chips-Ahoy: descartar
   Chips-Ahoy-KingSize: descartar
   Coca-cola 20Oz: coca_botella
-  CocaCola-16Oz: coca_lata  # revisado: lata roja de 16 oz
+  CocaCola-16Oz: coca_lata
   Crunch: descartar
   Crush-16Oz: solo_detector
   DORITOS-Cool-Ranch: descartar
@@ -176,9 +177,51 @@ lamar_grocery_color:
   Whatchamacallit-kingSize: descartar
   dietCoke-Can16oz: solo_detector
   skittles-smoothies-shareSize: descartar
-  zeroCocaCola-16Oz: solo_detector  # revisado: etiquetas ruidosas (mezcla con Mtn Dew)
+  zeroCocaCola-16Oz: solo_detector
 
 soda_bottles:
   coca-cola: coca_botella
   fanta: fanta_botella
   sprite: sprite_botella
+
+cold_drinks:
+  7up bottel: solo_detector  # no hay clase 7up_botella
+  7up can: 7up_lata
+  Red Bull bottel: solo_detector
+  Red Bull can: solo_detector
+  clemon bottel: solo_detector
+  clemon can: solo_detector
+  coca cola bottel: coca_botella
+  coca cola can: coca_lata
+  coke bottel: coca_botella
+  coke can: coca_lata
+  fanta bottel: fanta_botella
+  fanta can: fanta_lata
+  mirinda bottel: solo_detector
+  mirinda can: solo_detector
+  mojo bottel: solo_detector
+  mojo can: solo_detector
+  mountain dew bottel: solo_detector
+  mountain dew bottle: solo_detector
+  mountain dew can: solo_detector
+  pepsi bottel: pepsi_botella
+  pepsi can: pepsi_lata
+  speed bottel: solo_detector
+  speed can: solo_detector
+  sprite bottel: sprite_botella
+  sprite can: sprite_lata
+  tango bottel: solo_detector
+  tango can: solo_detector
+
+again_aug:
+  Coca Cola: coca_botella  # revisado: góndolas de botellas; las latas no están etiquetadas
+  'Coca Cola ': coca_botella
+  Coco Cola: solo_detector  # revisado: dudosa (cajas más anchas, ¿latas?)
+  Fanta: fanta_botella
+  'Fanta ': fanta_botella
+  Mountain Dew: solo_detector
+  'Mountain Dew ': solo_detector
+  Pepsi: pepsi_botella
+  'Pepsi ': pepsi_botella
+  Sprite: sprite_botella
+  'Sprite ': sprite_botella

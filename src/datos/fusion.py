@@ -71,25 +71,36 @@ def _elegir_negativos(df_neg: pd.DataFrame, n: int) -> pd.DataFrame:
 def construir(df: pd.DataFrame, dir_raw: Path, dir_salida: Path, modo: str, remapeo: dict,
               nombres_por_alias: dict[str, list[str]], clases: list[str], alias_permitidos: set[str],
               copias_train: int = 1, max_negativos: float = 0.1,
-              prioridad_alias: list[str] | None = None) -> pd.DataFrame:
+              prioridad_alias: list[str] | None = None,
+              rechazos_color: dict[tuple[str, int], str] | None = None) -> pd.DataFrame:
     """Arma un dataset fusionado. `df` es el índice con columnas grupo y split.
 
     - detector_1clase: toda caja que no se descarta pasa a 'producto' (id 0).
     - multiclase: solo cajas de las 9 clases; otras bebidas con marca (cerveza, Red Bull...)
       quedan como fondo. Se excluyen imágenes con cajas de clases genéricas sin marca
       (p. ej. 'Cans'), porque podrían ser una de nuestras marcas sin etiquetar.
+    - multiclase: si una caja tiene color incoherente con su clase (`rechazos_color`, de
+      scripts/datos_color.py) se excluye la imagen entera (quitar solo la caja dejaría un producto
+      sin etiquetar). Las excluidas quedan en <dir>/_descartes_color.csv.
     - Imágenes sin ninguna caja útil (negativos): como máximo `max_negativos` × positivos por split.
     """
     assert modo in MODOS
     if dir_salida.exists():
         shutil.rmtree(dir_salida)
-    filas = []
+    filas, descartes = [], []
+    rechazos_color = rechazos_color or {}
     for r in df[df["alias"].isin(alias_permitidos)].itertuples():
         txt = ruta_etiqueta(dir_raw / r.ruta)
         nombres = nombres_por_alias.get(r.alias, [])
         cajas = cajas_remapeadas(txt, nombres, remapeo, r.alias, modo, clases)
         if modo == "multiclase" and tiene_cajas_genericas(txt, nombres, remapeo, r.alias):
             continue
+        if modo == "multiclase" and rechazos_color:
+            motivos = [rechazos_color[(r.ruta, i)] for i in range(len(cajas)) if (r.ruta, i) in rechazos_color]
+            if motivos:
+                descartes.append({"alias": r.alias, "ruta": r.ruta, "split": r.split,
+                                  "clases": ";".join(clases[c[0]] for c in cajas), "motivo": ";".join(motivos)})
+                continue
         filas.append({**r._asdict(), "cajas": cajas, "n_cajas_salida": len(cajas)})
     if not filas:
         return pd.DataFrame()
@@ -127,6 +138,8 @@ def construir(df: pd.DataFrame, dir_raw: Path, dir_salida: Path, modo: str, rema
         "# Generado por scripts/datos_fusionar.py. 'path' es absoluto: regenerar en otra máquina.\n"
         + yaml.safe_dump(data, allow_unicode=True, sort_keys=False), encoding="utf-8")
 
+    if descartes:
+        pd.DataFrame(descartes).to_csv(dir_salida / "_descartes_color.csv", index=False)
     manifiesto = sel.drop(columns=["cajas"]).assign(
         clases_salida=[";".join(str(c[0]) for c in cs) for cs in sel["cajas"]])
     manifiesto.to_csv(dir_salida / "_manifiesto.csv", index=False)

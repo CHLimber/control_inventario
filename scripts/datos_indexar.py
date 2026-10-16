@@ -3,7 +3,9 @@
 Para cada imagen de DIR_DATOS/raw/<alias>/ calcula: id original (sin el sufijo .rf.<hash>),
 si es copia aumentada, tamaño, pHash y cajas. Luego:
   1. grupo = misma foto original (mismo proyecto + id original) o pHash idéntico;
-  2. split por grupo (los datasets con uso 'test_externo' van enteros a test);
+  2. split por grupo (los datasets con uso 'test_externo' van enteros a test). Los splits de la
+     corrida anterior se CONSERVAN (el clasificador y los sintéticos se generaron sobre ellos);
+     solo las imágenes nuevas se sortean (--resortear para empezar de cero);
   3. verifica que ningún grupo ni pHash quede en dos splits.
 Salida: DIR_DATOS/fusion/_indice_imagenes.csv (el pHash se cachea: correrlo de nuevo es rápido).
 
@@ -28,6 +30,8 @@ def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--semilla", type=int, default=42)
     ap.add_argument("--proporciones", type=float, nargs=3, default=(0.8, 0.1, 0.1), metavar=("TRAIN", "VAL", "TEST"))
+    ap.add_argument("--resortear", action="store_true",
+                    help="ignora los splits de la corrida anterior (por defecto se mantienen estables)")
     ap.add_argument("--procesos", type=int, default=None, help="procesos para el pHash (por defecto: núcleos-1)")
     args = ap.parse_args()
 
@@ -51,7 +55,14 @@ def main() -> None:
     # los grupos: si no, sus duplicados con otros datasets inflarían los grupos sin motivo.
     usados = {f["alias"] for f in fuentes_descargadas() if f.get("usar_en")}
     en_uso = df["alias"].isin(usados)
-    df_uso = asignar_splits(asignar_grupos(df[en_uso]), usos(), tuple(args.proporciones), args.semilla)
+    previos = {} if args.resortear or "split" not in cache.columns else dict(zip(cache["ruta"], cache["split"]))
+    df_uso = asignar_splits(asignar_grupos(df[en_uso]), usos(), tuple(args.proporciones), args.semilla, previos)
+    if previos:
+        antes = df_uso["ruta"].map(previos)
+        conocidas = antes.isin(["train", "val", "test"])
+        cambios = int((antes[conocidas] != df_uso.loc[conocidas, "split"]).sum())
+        print(f"Splits estables: {int(conocidas.sum())} imágenes ya asignadas, {cambios} cambiaron de split; "
+              f"{int((~conocidas).sum())} nuevas")
     df_fuera = asignar_grupos(df[~en_uso]).assign(split="no_usado")
     RUTA_INDICE.parent.mkdir(parents=True, exist_ok=True)
     pd.concat([df_uso, df_fuera], ignore_index=True).to_csv(RUTA_INDICE, index=False)

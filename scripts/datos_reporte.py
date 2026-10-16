@@ -173,7 +173,9 @@ def seccion_recortes(clases: list[str]) -> tuple[list[str], list[str]]:
     piv["total"] = piv.sum(axis=1)
     avisos = [f"recortes: `{c}` tiene {int(piv.loc[c, 'train'])} recortes en train (< {UMBRAL_POCOS})"
               for c in clases if piv.loc[c, "train"] < UMBRAL_POCOS]
-    desc = ind[ind["motivo_descarte"] != ""].groupby(["clase", "motivo_descarte"]).size().unstack(fill_value=0)
+    desc = ind[ind["motivo_descarte"] != ""]
+    desc = desc.assign(motivo=desc["motivo_descarte"].str.replace(r"_\d+\.\d+$", "", regex=True))
+    desc = desc.groupby(["clase", "motivo"]).size().unstack(fill_value=0)
     desc = desc.reindex(index=clases, fill_value=0)
     por_origen = ok.groupby(["clase", "origen"]).size().unstack(fill_value=0).reindex(index=clases, fill_value=0)
     fugas = verificar_fugas(ok.rename(columns={"imagen_original": "grupo"}))
@@ -187,6 +189,35 @@ def seccion_recortes(clases: list[str]) -> tuple[list[str], list[str]]:
     if (DIR_DOCS_DATOS / "recortes_muestras.jpg").exists():
         md += ["![recortes](datos/recortes_muestras.jpg)", ""]
     return md, avisos
+
+
+def seccion_color(clases: list[str]) -> list[str]:
+    ruta = DIR_FUSION / "_control_color.csv"
+    if not ruta.exists():
+        return ["_Sin control de color (correr `scripts/datos_color.py`)._", ""]
+    col = pd.read_csv(ruta, keep_default_na=False)
+    col["rechazada"] = col["motivo"] != ""
+    tasa = (col.pivot_table(index="clase", columns="alias", values="rechazada", aggfunc="mean")
+            .reindex(clases).mul(100).round(0))
+    tasa = tasa.apply(lambda s: s.map(lambda v: "-" if pd.isna(v) else f"{int(v)} %")).reset_index()
+    md = ["`scripts/datos_color.py` mide, en la zona central de cada caja con marca, la fracción de píxeles "
+          "rojos/naranjas/verdes/azules, oscuros (líquido de cola) y grises, y aplica un mínimo por clase "
+          "(`src/datos/color.py`): coca_lata rojo ≥ 0,15; coca_botella rojo ≥ 0,05 y oscuro ≥ 0,10 (botella "
+          "vacía); fanta naranja ≥ 0,10; sprite/7up verde ≥ 0,08 (sprite_botella oscuro ≤ 0,35); pepsi azul ≥ "
+          "0,08; y descarta las cajas en escala de grises (gris > 0,97). La caja rechazada no entra a los "
+          "recortes y su imagen sale del multiclase (queda en el detector). Nada se borra de `raw/`; el "
+          "detalle está en `fusion/_control_color.csv`, `fusion/multiclase/_descartes_color.csv` y en la "
+          "columna `motivo_descarte` de `recortes/indice_recortes.csv`.", "",
+          f"Cajas rechazadas: {int(col['rechazada'].sum())} de {len(col)}. Porcentaje por clase y fuente:", "",
+          tabla_md(tasa), "",
+          "Qué saca (ver grillas): variantes de otro color rotuladas con la marca (Fanta frutilla/uva/"
+          "manzana, Pepsi Diet, 7up Free), latas naranjas rotuladas coca_lata y botellas vacías de "
+          "darians_bottle, las copias en grises de again_aug y los recortes tapados por los cuadros negros "
+          "(cutout) de cold_drinks. Las latas de Coca-Cola con diseño geométrico rojo/turquesa de darians "
+          "son una edición real de Coca-Cola: con rojo ≥ 0,15 se conserva la mayoría.", "",
+          "Rechazadas (muestra):", "", "![rechazos de color](datos/color_rechazos.jpg)", "",
+          "Aceptadas (muestra):", "", "![aceptadas](datos/color_aceptados.jpg)", ""]
+    return md
 
 
 def grilla_recortes(clases: list[str], por_clase: int = 8) -> None:
@@ -233,9 +264,10 @@ def main() -> None:
           "1. `datos_descargar.py` → `raw/<alias>/` (última versión, formato YOLOv8; licencia en `_fuente.json`)",
           "2. `datos_remapeo.py` → borrador `config/remapeo_clases.yaml`",
           "3. `datos_indexar.py` → `fusion/_indice_imagenes.csv` (pHash, grupos anti-fuga, split)",
-          "4. `datos_fusionar.py` → `fusion/detector_1clase/` y `fusion/multiclase/`",
-          "5. `datos_recortes.py` → `recortes/<split>/<clase>/` + `indice_recortes.csv`",
-          "6. `datos_reporte.py` → este documento", "",
+          "4. `datos_color.py` → `fusion/_control_color.csv` (control de color por clase)",
+          "5. `datos_fusionar.py` → `fusion/detector_1clase/` y `fusion/multiclase/`",
+          "6. `datos_recortes.py` → `recortes/<split>/<clase>/` + `indice_recortes.csv`",
+          "7. `datos_reporte.py` → este documento", "",
           "## Criterios", "",
           "- **Grupo anti-fuga** = misma foto original: mismo proyecto de Roboflow y mismo nombre sin el sufijo "
           "`.rf.<hash>` (copias aumentadas y la misma foto en otra versión), unido con toda imagen de pHash "
@@ -281,6 +313,7 @@ def main() -> None:
     parte, av = seccion_fusion("multiclase", clases)
     md += parte
     avisos += av
+    md += ["### Control de color (etiquetas equivocadas)", ""] + seccion_color(clases)
     md += ["### recortes (clasificador)", ""]
     if not args.sin_grillas:
         grilla_recortes(clases)

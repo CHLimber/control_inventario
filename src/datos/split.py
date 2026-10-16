@@ -106,19 +106,33 @@ def _fraccion(grupo: str, semilla: int) -> float:
 
 
 def asignar_splits(df: pd.DataFrame, usos: dict[str, str], proporciones=PROPORCIONES,
-                   semilla: int = 42) -> pd.DataFrame:
+                   semilla: int = 42, previos: dict[str, str] | None = None) -> pd.DataFrame:
     """Agrega la columna 'split'.
 
     - Si algún miembro del grupo viene de un dataset con uso 'test_externo', el grupo entero va a test.
-    - El resto se reparte por hash determinista del grupo (estable aunque se agreguen datasets).
+    - `previos` (ruta -> split de una corrida anterior) mantiene ESTABLES los splits ya asignados:
+      un grupo con imágenes ya repartidas conserva el split más frecuente entre ellas (solo cambia si
+      un grupo nuevo unió imágenes que antes estaban en splits distintos).
+    - El resto se reparte por hash determinista del grupo.
     """
     df = df.copy()
     externos = set(df.loc[df["alias"].map(lambda a: usos.get(a) == "test_externo"), "grupo"])
     p_train, p_val = proporciones[0], proporciones[0] + proporciones[1]
+    heredados: dict[str, str] = {}
+    if previos:
+        prev = df["ruta"].map(previos)
+        validos = prev.isin(SPLITS)
+        if validos.any():
+            moda = (pd.DataFrame({"grupo": df.loc[validos, "grupo"], "split": prev[validos]})
+                    .groupby("grupo")["split"].agg(lambda s: s.value_counts().index[0]))
+            heredados = moda.to_dict()
     splits = {}
     for g in df["grupo"].unique():
         if g in externos:
             splits[g] = "test"
+            continue
+        if g in heredados:
+            splits[g] = heredados[g]
             continue
         f = _fraccion(g, semilla)
         splits[g] = "train" if f < p_train else ("val" if f < p_val else "test")

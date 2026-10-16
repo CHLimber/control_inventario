@@ -16,11 +16,12 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from src.config import nombres_clases  # noqa: E402
+from src.datos.color import cargar_rechazos  # noqa: E402
 from src.datos.indice import cargar_indice  # noqa: E402
 from src.datos.recortes import generar  # noqa: E402
 from src.datos.remapeo import cargar_remapeo  # noqa: E402
 from src.datos.rutas import (  # noqa: E402
-    DIR_RAW, DIR_RECORTES, RUTA_INDICE, RUTA_REMAPEO, alias_para, nombres_por_alias, prioridad_alias,
+    DIR_FUSION, DIR_RAW, DIR_RECORTES, RUTA_INDICE, RUTA_REMAPEO, alias_para, nombres_por_alias, prioridad_alias,
 )
 from src.datos.split import seleccionar, verificar_fugas  # noqa: E402
 from src.datos.util import SPLITS  # noqa: E402
@@ -39,6 +40,9 @@ def main() -> None:
     if df.empty:
         sys.exit("Falta el índice: corré scripts/datos_indexar.py")
     remapeo = cargar_remapeo(RUTA_REMAPEO)
+    rechazos = cargar_rechazos(DIR_FUSION / "_control_color.csv")
+    if not rechazos:
+        print("AVISO: no hay control de color (corré scripts/datos_color.py)")
     clases = nombres_clases()
     nombres = nombres_por_alias()
     marcas = alias_para("recortes")
@@ -48,7 +52,7 @@ def main() -> None:
     sel = seleccionar(df, args.copias_train, prioridad_alias())
     print(f"{len(sel)} imágenes candidatas ({sel['split'].value_counts().to_dict()})")
     indice = generar(sel, DIR_RAW, DIR_RECORTES, remapeo, nombres, clases, args.margen, args.min_lado,
-                     args.min_nitidez)
+                     args.min_nitidez, rechazos_color=rechazos)
     if indice.empty:
         sys.exit("No se generó ningún recorte")
 
@@ -57,8 +61,9 @@ def main() -> None:
     print(guardados.groupby(["clase", "split"]).size().unstack(fill_value=0)
           .reindex(index=clases, columns=list(SPLITS), fill_value=0).to_string())
     print("\nDescartes por motivo:")
-    print(indice[indice["motivo_descarte"] != ""].groupby(["motivo_descarte", "clase"]).size()
-          .unstack(fill_value=0).to_string())
+    desc = indice[indice["motivo_descarte"] != ""]
+    motivo = desc["motivo_descarte"].str.replace(r"_\d+\.\d+$", "", regex=True)  # color_rojo_0.03 -> color_rojo
+    print(desc.assign(motivo=motivo).groupby(["motivo", "clase"]).size().unstack(fill_value=0).to_string())
     problemas = verificar_fugas(guardados.rename(columns={"imagen_original": "grupo"}))
     if problemas:
         sys.exit("FUGAS entre splits:\n  " + "\n  ".join(problemas))
