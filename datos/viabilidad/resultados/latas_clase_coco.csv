@@ -1,0 +1,23 @@
+modelo,tipo_real,clase_coco,n,%
+yolo26n,botella,(nada),712,86.3
+yolo26n,botella,bottle,97,11.76
+yolo26n,botella,fire hydrant,2,0.24
+yolo26n,botella,orange,9,1.09
+yolo26n,botella,parking meter,1,0.12
+yolo26n,botella,person,1,0.12
+yolo26n,botella,snowboard,2,0.24
+yolo26n,botella,umbrella,1,0.12
+yolo26n,lata,(nada),126,49.61
+yolo26n,lata,bottle,122,48.03
+yolo26n,lata,cell phone,5,1.97
+yolo26n,lata,cup,1,0.39
+yolo26s,botella,(nada),570,69.09
+yolo26s,botella,bottle,223,27.03
+yolo26s,botella,cup,18,2.18
+yolo26s,botella,snowboard,2,0.24
+yolo26s,botella,sports ball,11,1.33
+yolo26s,botella,suitcase,1,0.12
+yolo26s,lata,(nada),131,51.57
+yolo26s,lata,bottle,120,47.24
+yolo26s,lata,cell phone,2,0.79
+yolo26s,lata,cup,1,0.39

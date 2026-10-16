@@ -1,0 +1,13 @@
+modelo,dataset,tipo_real,orientacion,n,pct_como_bottle,pct_con_alguna_clase
+yolo26n,roboflow-100__soda-bottles,botella,acostada,456,0.0,1.3
+yolo26n,roboflow-100__soda-bottles,botella,de pie,259,3.1,6.9
+yolo26n,rosd__final_hr,botella,acostada,26,30.8,30.8
+yolo26n,rosd__final_hr,botella,de pie,84,96.4,96.4
+yolo26n,rosd__final_hr,lata,acostada,67,3.0,10.4
+yolo26n,rosd__final_hr,lata,de pie,187,64.2,64.7
+yolo26s,roboflow-100__soda-bottles,botella,acostada,456,16.0,20.8
+yolo26s,roboflow-100__soda-bottles,botella,de pie,259,17.4,21.2
+yolo26s,rosd__final_hr,botella,acostada,26,80.8,80.8
+yolo26s,rosd__final_hr,botella,de pie,84,100.0,100.0
+yolo26s,rosd__final_hr,lata,acostada,67,56.7,59.7
+yolo26s,rosd__final_hr,lata,de pie,187,43.9,44.4
