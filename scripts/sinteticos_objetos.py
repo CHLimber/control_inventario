@@ -106,8 +106,7 @@ def main() -> None:
             continue
         motivo = obj.motivo_color(f["clase"], np.asarray(Image.open(ruta).convert("RGBA")))
         if motivo:
-            rech.append({**f, "motivo": motivo})
-            ruta.unlink()
+            rech.append({**f, "motivo": motivo})   # el PNG queda en disco, solo sale del índice
         else:
             final.append(f)
     print(f"control de color: {len(previos) + len(ok) - len(final)} objetos descartados")

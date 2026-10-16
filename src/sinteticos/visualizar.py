@@ -22,7 +22,7 @@ def leer_cajas_yolo(ruta: Path, ancho: int, alto: int):
 
 
 def grilla(dir_lote: Path, salida: Path, nombres: list[str], n: int = 12, columnas: int = 4,
-           lado: int = 480, semilla: int = 0) -> Path:
+           lado: int = 400, semilla: int = 0) -> Path:
     """Muestra ``n`` imágenes del árbol multiclase con sus cajas y el conteo exacto como título."""
     imgs = sorted((dir_lote / "multiclase" / "images").glob("*.jpg"))
     rng = np.random.default_rng(semilla)

@@ -51,7 +51,7 @@ class Parametros:
     p_estante_vacio: float = 0.04    # imagen sin ningún envase (todo en cero)
     p_nivel_vacio: float = 0.12      # cada nivel por separado puede quedar vacío
     p_latas_medio: float = 0.35      # el nivel del medio lleva latas en vez de botellas chicas
-    llenado_botellas: tuple[float, float] = (2.0, 1.6)   # Beta(a, b) de la fracción de capacidad
+    llenado_botellas: tuple[float, float] = (2.4, 1.4)   # Beta(a, b) de la fracción de capacidad
     llenado_latas: tuple[float, float] = (2.5, 1.0)
     p_agrupado: float = 0.6          # productos iguales juntos (facings) vs mezclados
     p_solape: float = 0.25           # prob. de solapamiento leve con el vecino
