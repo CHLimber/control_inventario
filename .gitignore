@@ -43,3 +43,6 @@ __pycache__/
 
 # Worktrees de los agentes
 .claude/
+
+# Paquetes para Colab
+*.zip
