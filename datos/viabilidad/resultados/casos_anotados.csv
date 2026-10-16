@@ -1,0 +1,13 @@
+archivo,imagen,dataset,caso,n_real,n_det,error
+01_exacto_real10_det10.jpg,rosd__final_hr/test/images/MVIMG_20260416_000457_jpg.rf.023395365f778b686a958e4dd0128f66.jpg,rosd__final_hr,exacto,10,10,0
+02_exacto_real10_det10.jpg,rosd__final_hr/valid/images/MVIMG_20260416_000836_jpg.rf.5a48f1599ebc84b63e99eb7bbe53c7ed.jpg,rosd__final_hr,exacto,10,10,0
+03_exacto_real9_det9.jpg,rosd__final_hr/test/images/MVIMG_20260416_002235_jpg.rf.73f3f34f6c3a3186b82472a80764ecc0.jpg,rosd__final_hr,exacto,9,9,0
+04_exacto_real7_det7.jpg,rosd__final_hr/valid/images/MVIMG_20260415_235038_jpg.rf.8334699fe4b66e59a31a4e20b2b7e355.jpg,rosd__final_hr,exacto,7,7,0
+05_subconteo_real32_det0.jpg,roboflow-100__soda-bottles/valid/images/01_20220315_133731_bmp_jpg.rf.f7245e39ad214be7e1a17d62211c2250.jpg,roboflow-100__soda-bottles,subconteo,32,0,-32
+06_subconteo_real31_det0.jpg,roboflow-100__soda-bottles/valid/images/01_20220315_153117_bmp_jpg.rf.8331198952616f7b65446ed6887ef500.jpg,roboflow-100__soda-bottles,subconteo,31,0,-31
+07_subconteo_real14_det0.jpg,roboflow-100__soda-bottles/test/images/01_20220317_124533_bmp_jpg.rf.4583c9b546123a3457542373163ec65f.jpg,roboflow-100__soda-bottles,subconteo,14,0,-14
+08_subconteo_real14_det0.jpg,roboflow-100__soda-bottles/test/images/01_20220317_125405_bmp_jpg.rf.9d8a56ce284eda4edd762f6e2a66364b.jpg,roboflow-100__soda-bottles,subconteo,14,0,-14
+09_subconteo_real9_det1.jpg,rosd__final_hr/test/images/MVIMG_20260415_235344_jpg.rf.5ab6bfdfc33e5b8fd9b0b8c8c33941d4.jpg,rosd__final_hr,subconteo,9,1,-8
+10_subconteo_real8_det0.jpg,rosd__final_hr/test/images/MVIMG_20260415_235312_jpg.rf.5276ec610abbbeab8b65fa07cf0e7c8f.jpg,rosd__final_hr,subconteo,8,0,-8
+11_subconteo_real7_det4.jpg,rosd__final_hr/test/images/MVIMG_20260415_235138_jpg.rf.04e26ebe468d2ed2a1034f655fef58b8.jpg,rosd__final_hr,subconteo,7,4,-3
+12_subconteo_real11_det8.jpg,rosd__final_hr/valid/images/MVIMG_20260416_000632_jpg.rf.53715f6928fbf162d80cb543a78b07cd.jpg,rosd__final_hr,subconteo,11,8,-3

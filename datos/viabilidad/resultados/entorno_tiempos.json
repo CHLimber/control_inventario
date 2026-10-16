@@ -1,0 +1,6 @@
+{
+  "cpu": "AMD Ryzen 7 7735HS with Radeon Graphics",
+  "torch": "2.14.1+cpu",
+  "cuda": false,
+  "ultralytics": "8.4.178"
+}
