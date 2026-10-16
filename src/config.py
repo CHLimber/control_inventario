@@ -20,9 +20,10 @@ DIR_CONFIG = RAIZ / "config"
 DIR_DATOS = Path(os.getenv("INVENTARIO_DATOS") or RAIZ / "datos")
 DIR_ESCANEOS = DIR_DATOS / "escaneos"      # fotos subidas por el escáner
 DIR_MAQUETA = DIR_DATOS / "maqueta"        # fotos de la maqueta + escenas.csv
-DIR_MODELOS = RAIZ / "modelos"
+# INVENTARIO_MODELOS / INVENTARIO_LOGS: idem, para pesos y logs de TensorBoard.
+DIR_MODELOS = Path(os.getenv("INVENTARIO_MODELOS") or RAIZ / "modelos")
 DIR_WEB = RAIZ / "web"
-DIR_LOGS = RAIZ / "logs"
+DIR_LOGS = Path(os.getenv("INVENTARIO_LOGS") or RAIZ / "logs")
 
 ARCHIVO_CLASES = DIR_CONFIG / "clases.json"
 CLASE_DESCONOCIDO = "desconocido"
