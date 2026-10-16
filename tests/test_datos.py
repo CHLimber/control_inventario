@@ -167,6 +167,17 @@ def test_split_sin_fugas_y_test_externo(mini):
     assert (df["split"].values == df2["split"].values).all()
 
 
+def test_splits_estables_al_agregar_datos(mini):
+    usos = {"ds_a": "entrenamiento", "ds_b": "entrenamiento"}
+    solo_a = asignar_splits(asignar_grupos(mini["indice"][mini["indice"]["alias"] == "ds_a"]), usos, semilla=1)
+    previos = dict(zip(solo_a["ruta"], solo_a["split"]))
+    # Con otra semilla, sin 'previos' el sorteo cambiaría; con 'previos' lo ya asignado se mantiene.
+    todo = asignar_splits(asignar_grupos(mini["indice"]), usos, semilla=7, previos=previos)
+    a = todo[todo["alias"] == "ds_a"]
+    assert (a["ruta"].map(previos) == a["split"]).all()
+    assert verificar_fugas(todo) == []
+
+
 def test_verificar_fugas_detecta_grupo_partido():
     df = pd.DataFrame({"grupo": ["g1", "g1", "g2"], "split": ["train", "test", "val"],
                        "phash": ["a1a1a1a1a1a1a1a1", "b2b2b2b2b2b2b2b2", "c3c3c3c3c3c3c3c3"]})
@@ -178,6 +189,36 @@ def test_seleccionar_una_copia_por_foto(mini):
     sel = seleccionar(df, copias_train=1)
     assert sel.groupby(["alias", "grupo"]).size().max() == 1
     assert len(seleccionar(df, copias_train=0)) == len(df)
+
+
+# ---------------------------------------------------------------- control de color
+def test_control_de_color():
+    from src.datos.color import medir, motivo_color
+
+    img = Image.new("RGB", (200, 100), (255, 255, 255))
+    img.paste((220, 20, 30), (0, 0, 100, 100))     # mitad izquierda roja (lata de Coca)
+    img.paste((30, 160, 40), (100, 0, 200, 100))   # mitad derecha verde (lata de Sprite)
+    rojo, verde = medir(img, (0, 0, 100, 100)), medir(img, (100, 0, 200, 100))
+    assert rojo["rojo"] > 0.9 and verde["verde"] > 0.9
+    assert motivo_color("coca_lata", rojo) == ""
+    assert motivo_color("coca_lata", verde).startswith("color_rojo")   # verde rotulada Coca
+    assert motivo_color("sprite_lata", verde) == ""
+    gris = medir(img.convert("L").convert("RGB"), (0, 0, 100, 100))
+    assert motivo_color("coca_lata", gris).startswith("color_gris")
+
+
+def test_fusion_y_recortes_excluyen_color_incoherente(mini):
+    df = asignar_splits(asignar_grupos(mini["indice"]), {"ds_a": "entrenamiento", "ds_b": "entrenamiento"})
+    ruta = df.loc[df["alias"] == "ds_b", "ruta"].iloc[1]
+    rechazos = {(ruta, 0): "color_naranja_0.00"}
+    man = fusion.construir(df, mini["raw"], mini["tmp"] / "m", "multiclase", REMAPEO, mini["nombres"], CLASES,
+                           {"ds_a", "ds_b"}, copias_train=0, max_negativos=0.0, rechazos_color=rechazos)
+    assert ruta not in set(man["ruta"])
+    assert (mini["tmp"] / "m" / "_descartes_color.csv").exists()
+    ind = recortes.generar(df, mini["raw"], mini["tmp"] / "r", REMAPEO, mini["nombres"], CLASES,
+                           rechazos_color=rechazos)
+    fila = ind[(ind["imagen"] == ruta) & (ind["caja"] == 0)]
+    assert fila["motivo_descarte"].iloc[0] == "color_naranja_0.00"
 
 
 # ---------------------------------------------------------------- fusión

@@ -1,15 +1,16 @@
 # Datos públicos: reporte de calidad y conteos
 
-Generado por `scripts/datos_reporte.py` el 2026-10-15. Los datos viven en `DIR_DATOS` (`datos/raw`, `datos/fusion`, `datos/recortes`; no se versionan).
+Generado por `scripts/datos_reporte.py` el 2026-10-16. Los datos viven en `DIR_DATOS` (`datos/raw`, `datos/fusion`, `datos/recortes`; no se versionan).
 
 Pipeline (cada paso es un script idempotente; el notebook `notebooks/02_datos.ipynb` los llama):
 
 1. `datos_descargar.py` → `raw/<alias>/` (última versión, formato YOLOv8; licencia en `_fuente.json`)
 2. `datos_remapeo.py` → borrador `config/remapeo_clases.yaml`
 3. `datos_indexar.py` → `fusion/_indice_imagenes.csv` (pHash, grupos anti-fuga, split)
-4. `datos_fusionar.py` → `fusion/detector_1clase/` y `fusion/multiclase/`
-5. `datos_recortes.py` → `recortes/<split>/<clase>/` + `indice_recortes.csv`
-6. `datos_reporte.py` → este documento
+4. `datos_color.py` → `fusion/_control_color.csv` (control de color por clase)
+5. `datos_fusionar.py` → `fusion/detector_1clase/` y `fusion/multiclase/`
+6. `datos_recortes.py` → `recortes/<split>/<clase>/` + `indice_recortes.csv`
+7. `datos_reporte.py` → este documento
 
 ## Criterios
 
@@ -32,6 +33,8 @@ Pipeline (cada paso es un script idempotente; el notebook `notebooks/02_datos.ip
 | lamar_grocery | lamar-university-venef/grocery-rfn8l | 9 | CC BY 4.0 | 35380 | descargado |
 | lamar_grocery_color | lamar-university-venef/grocery-rfn8l | 1 | CC BY 4.0 | 8099 | descargado |
 | soda_bottles | roboflow-100/soda-bottles | 4 | CC BY 4.0 | 2249 | descargado |
+| cold_drinks | cold-drinks-cftkw/cold-drinks-qki32 | 1 | CC BY 4.0 | 3708 | descargado |
+| again_aug | again/aug-tygyc | 5 | CC BY 4.0 | 2504 | descargado |
 | sku110k_sub | ultralytics/SKU-110K | - | - | 0 | no disponible (sin descargar) |
 
 Atribución (CC BY 4.0): cada dataset pertenece a su autor en Roboflow Universe (https://universe.roboflow.com/<workspace>/<proyecto>).
@@ -297,6 +300,78 @@ Clases que no aportan marca: 13335 cajas (88 %).
 
 ![muestras soda_bottles](datos/muestras_soda_bottles.jpg)
 
+### `cold_drinks` — cold-drinks-cftkw/cold-drinks-qki32
+
+- **Licencia**: CC BY 4.0 · **versión** v1 (de 1) · uso: `entrenamiento` · tipo: `marcas`
+- Preprocesado de Roboflow: resize, filter-null; aumentos offline: blur, brightness, crop, cutout, flip, image, mosaic, rotate
+- Imágenes: **3708** · fotos originales: **3700** · copias aumentadas: 8 (3708 con sufijo `.rf.<hash>`) · grupos anti-fuga (fotos + duplicados/ráfagas): 3640
+- Duplicados por pHash con otra foto: 116 · con otros datasets: 1 · imágenes sin cajas: 2
+- Tamaño típico: 640×640 px · cajas: 13538 (3.7 por imagen)
+
+| id | clase original | cajas | destino |
+|---|---|---|---|
+| 3 | Red Bull can | 1446 | solo_detector |
+| 10 | fanta bottel | 1054 | fanta_botella |
+| 23 | sprite bottel | 1042 | sprite_botella |
+| 19 | pepsi bottel | 993 | pepsi_botella |
+| 16 | mountain dew bottel | 976 | solo_detector |
+| 6 | coca cola bottel | 960 | coca_botella |
+| 0 | 7up bottel | 850 | solo_detector |
+| 1 | 7up can | 837 | 7up_lata |
+| 7 | coca cola can | 803 | coca_lata |
+| 11 | fanta can | 738 | fanta_lata |
+| 12 | mirinda bottel | 701 | solo_detector |
+| 20 | pepsi can | 697 | pepsi_lata |
+| 24 | sprite can | 675 | sprite_lata |
+| 13 | mirinda can | 542 | solo_detector |
+| 18 | mountain dew can | 515 | solo_detector |
+| 9 | coke can | 164 | coca_lata |
+| 22 | speed can | 128 | solo_detector |
+| 15 | mojo can | 107 | solo_detector |
+| 2 | Red Bull bottel | 99 | solo_detector |
+| 21 | speed bottel | 73 | solo_detector |
+| 8 | coke bottel | 53 | coca_botella |
+| 4 | clemon bottel | 32 | solo_detector |
+| 14 | mojo bottel | 31 | solo_detector |
+| 25 | tango bottel | 10 | solo_detector |
+| 26 | tango can | 7 | solo_detector |
+| 5 | clemon can | 4 | solo_detector |
+| 17 | mountain dew bottle | 1 | solo_detector |
+
+Clases que no aportan marca: 5522 cajas (41 %).
+
+**Veredicto**: BUENO para marcas. Imágenes de catálogo/web (envase sobre fondo blanco, pocas fotos reales), cajas completas, botellas y latas separadas. Trae variantes rotuladas como la marca (Fanta frutilla/uva, Sprite Zero, 7up Free, Pepsi Diet): el control de color filtra las más obvias. Brecha de dominio con la góndola real.
+
+![muestras cold_drinks](datos/muestras_cold_drinks.jpg)
+
+### `again_aug` — again/aug-tygyc
+
+- **Licencia**: CC BY 4.0 · **versión** v5 (de 5) · uso: `entrenamiento` · tipo: `marcas`
+- Preprocesado de Roboflow: auto-orient, resize, remap; aumentos offline: blur, brightness, crop, exposure, image, mosaic, noise, rotate, saturation
+- Imágenes: **2504** · fotos originales: **613** · copias aumentadas: 1891 (2504 con sufijo `.rf.<hash>`) · grupos anti-fuga (fotos + duplicados/ráfagas): 602
+- Duplicados por pHash con otra foto: 26 · con otros datasets: 1 · imágenes sin cajas: 65
+- Tamaño típico: 640×640 px · cajas: 51104 (20.4 por imagen)
+
+| id | clase original | cajas | destino |
+|---|---|---|---|
+| 7 | Pepsi | 15567 | pepsi_botella |
+| 0 | Coca Cola | 12306 | coca_botella |
+| 9 | Sprite | 9092 | sprite_botella |
+| 3 | Fanta | 8020 | fanta_botella |
+| 5 | Mountain Dew | 5732 | solo_detector |
+| 2 | Coco Cola | 229 | solo_detector |
+| 8 | Pepsi  | 67 | pepsi_botella |
+| 1 | Coca Cola  | 43 | coca_botella |
+| 6 | Mountain Dew  | 28 | solo_detector |
+| 10 | Sprite  | 14 | sprite_botella |
+| 4 | Fanta  | 6 | fanta_botella |
+
+Clases que no aportan marca: 5989 cajas (12 %).
+
+**Veredicto**: REGULAR. Góndolas reales de supermercado (muy cerca de nuestro caso), pero con ETIQUETADO INCOMPLETO: muchas botellas y todas las latas visibles quedan sin caja, así que no sirve para los datasets YOLO (enseñaría que un producto es fondo). La v5 solo trae 11 clases sin formato (las 77 del proyecto con 'lon'/'chai' no están en ninguna versión); son botellas -> *_botella. Aumentos fuertes (mosaicos, grises, ruido): el control de color descarta los recortes en grises. Solo se usa para los recortes del clasificador.
+
+![muestras again_aug](datos/muestras_again_aug.jpg)
+
 ### `sku110k_sub` — ultralytics/SKU-110K
 
 **No disponible**: no descargado.
@@ -310,20 +385,21 @@ Nota: PENDIENTE (opcional, 13,6 GB). Góndolas densas, 1 clase. Licencia de inve
 
 | split | imagenes | cajas | negativos |
 |---|---|---|---|
-| train | 19560 | 63297 | 1778 |
-| val | 2526 | 8701 | 229 |
-| test | 2504 | 8263 | 227 |
+| train | 22756 | 74015 | 2068 |
+| val | 2928 | 10036 | 266 |
+| test | 2908 | 9596 | 263 |
 
 | clase | img train | cajas train | img val | cajas val | img test | cajas test |
 |---|---|---|---|---|---|---|
-| producto | 17782 | 63297 | 2297 | 8701 | 2277 | 8263 |
+| producto | 20688 | 74015 | 2662 | 10036 | 2645 | 9596 |
 
 Por dataset de origen (imágenes):
 
 | alias | train | val | test |
 |---|---|---|---|
-| darians_bottle | 14355 | 1827 | 1801 |
-| lamar_grocery_color | 877 | 117 | 145 |
+| cold_drinks | 2907 | 365 | 368 |
+| darians_bottle | 14560 | 1850 | 1825 |
+| lamar_grocery_color | 961 | 131 | 157 |
 | rosd_final_hr | 2552 | 344 | 329 |
 | soda_bottles | 1776 | 238 | 229 |
 
@@ -333,31 +409,60 @@ Verificación de fugas: **sin fugas** (ningún grupo ni pHash en dos splits).
 
 | split | imagenes | cajas | negativos |
 |---|---|---|---|
-| train | 4471 | 5130 | 406 |
-| val | 598 | 703 | 54 |
-| test | 543 | 659 | 49 |
+| train | 4647 | 6433 | 422 |
+| val | 610 | 813 | 55 |
+| test | 584 | 823 | 53 |
 
 | clase | img train | cajas train | img val | cajas val | img test | cajas test |
 |---|---|---|---|---|---|---|
-| coca_botella | 1067 | 1108 | 152 | 156 | 137 | 146 |
-| coca_lata | 937 | 948 | 108 | 110 | 117 | 118 |
-| fanta_botella | 1013 | 1030 | 151 | 153 | 114 | 118 |
-| fanta_lata | 31 | 31 | 4 | 4 | 4 | 4 |
-| sprite_botella | 1074 | 1092 | 137 | 139 | 140 | 144 |
-| sprite_lata | 179 | 181 | 27 | 27 | 24 | 24 |
-| pepsi_botella | 241 | 266 | 35 | 40 | 26 | 30 |
-| pepsi_lata | 217 | 223 | 30 | 31 | 36 | 39 |
-| 7up_lata | 243 | 251 | 41 | 43 | 35 | 36 |
+| coca_botella | 860 | 979 | 127 | 137 | 121 | 146 |
+| coca_lata | 977 | 1099 | 114 | 127 | 125 | 133 |
+| fanta_botella | 856 | 981 | 118 | 142 | 88 | 110 |
+| fanta_lata | 154 | 214 | 21 | 22 | 16 | 18 |
+| sprite_botella | 1023 | 1111 | 128 | 134 | 132 | 143 |
+| sprite_lata | 321 | 369 | 39 | 47 | 44 | 46 |
+| pepsi_botella | 455 | 635 | 58 | 67 | 50 | 64 |
+| pepsi_lata | 394 | 474 | 44 | 55 | 58 | 79 |
+| 7up_lata | 429 | 571 | 69 | 82 | 63 | 84 |
 
 Por dataset de origen (imágenes):
 
 | alias | train | val | test |
 |---|---|---|---|
-| darians_bottle | 3185 | 414 | 367 |
-| lamar_grocery_color | 293 | 40 | 43 |
-| rosd_final_hr | 993 | 144 | 133 |
+| cold_drinks | 1113 | 133 | 135 |
+| darians_bottle | 2282 | 301 | 285 |
+| lamar_grocery_color | 263 | 36 | 35 |
+| rosd_final_hr | 989 | 140 | 129 |
 
 Verificación de fugas: **sin fugas** (ningún grupo ni pHash en dos splits).
+
+### Control de color (etiquetas equivocadas)
+
+`scripts/datos_color.py` mide, en la zona central de cada caja con marca, la fracción de píxeles rojos/naranjas/verdes/azules, oscuros (líquido de cola) y grises, y aplica un mínimo por clase (`src/datos/color.py`): coca_lata rojo ≥ 0,15; coca_botella rojo ≥ 0,05 y oscuro ≥ 0,10 (botella vacía); fanta naranja ≥ 0,10; sprite/7up verde ≥ 0,08 (sprite_botella oscuro ≤ 0,35); pepsi azul ≥ 0,08; y descarta las cajas en escala de grises (gris > 0,97). La caja rechazada no entra a los recortes y su imagen sale del multiclase (queda en el detector). Nada se borra de `raw/`; el detalle está en `fusion/_control_color.csv`, `fusion/multiclase/_descartes_color.csv` y en la columna `motivo_descarte` de `recortes/indice_recortes.csv`.
+
+Cajas rechazadas: 38536 de 68744. Porcentaje por clase y fuente:
+
+| clase | again_aug | cold_drinks | darians_bottle | lamar_grocery_color | rosd_final_hr |
+|---|---|---|---|---|---|
+| coca_botella | 70 % | 30 % | 65 % | 18 % | 0 % |
+| coca_lata | - | 20 % | 33 % | 0 % | 1 % |
+| fanta_botella | 70 % | 29 % | 49 % | 5 % | 0 % |
+| fanta_lata | - | 42 % | - | 0 % | - |
+| sprite_botella | 69 % | 41 % | 32 % | 14 % | 0 % |
+| sprite_lata | - | 24 % | - | 0 % | 0 % |
+| pepsi_botella | 67 % | 35 % | - | - | 2 % |
+| pepsi_lata | - | 19 % | - | - | 0 % |
+| 7up_lata | - | 36 % | - | - | 0 % |
+
+Qué saca (ver grillas): variantes de otro color rotuladas con la marca (Fanta frutilla/uva/manzana, Pepsi Diet, 7up Free), latas naranjas rotuladas coca_lata y botellas vacías de darians_bottle, las copias en grises de again_aug y los recortes tapados por los cuadros negros (cutout) de cold_drinks. Las latas de Coca-Cola con diseño geométrico rojo/turquesa de darians son una edición real de Coca-Cola: con rojo ≥ 0,15 se conserva la mayoría.
+
+Rechazadas (muestra):
+
+![rechazos de color](datos/color_rechazos.jpg)
+
+Aceptadas (muestra):
+
+![aceptadas](datos/color_aceptados.jpg)
 
 ### recortes (clasificador)
 
@@ -365,45 +470,45 @@ Recortes guardados (clase × split):
 
 | clase | train | val | test | total |
 |---|---|---|---|---|
-| coca_botella | 1070 | 150 | 141 | 1361 |
-| coca_lata | 913 | 97 | 110 | 1120 |
-| fanta_botella | 992 | 144 | 115 | 1251 |
-| fanta_lata | 30 | 4 | 4 | 38 |
-| sprite_botella | 1047 | 131 | 137 | 1315 |
-| sprite_lata | 180 | 27 | 24 | 231 |
-| pepsi_botella | 264 | 38 | 29 | 331 |
-| pepsi_lata | 218 | 31 | 34 | 283 |
-| 7up_lata | 244 | 39 | 36 | 319 |
+| coca_botella | 1634 | 189 | 211 | 2034 |
+| coca_lata | 1310 | 151 | 146 | 1607 |
+| fanta_botella | 1609 | 213 | 183 | 2005 |
+| fanta_lata | 380 | 33 | 32 | 445 |
+| sprite_botella | 1757 | 190 | 184 | 2131 |
+| sprite_lata | 589 | 74 | 71 | 734 |
+| pepsi_botella | 1496 | 168 | 180 | 1844 |
+| pepsi_lata | 672 | 70 | 94 | 836 |
+| 7up_lata | 660 | 91 | 95 | 846 |
 
 Por dataset de origen:
 
-| clase | darians_bottle | lamar_grocery_color | rosd_final_hr |
-|---|---|---|---|
-| coca_botella | 944 | 133 | 284 |
-| coca_lata | 718 | 78 | 324 |
-| fanta_botella | 870 | 65 | 316 |
-| fanta_lata | 0 | 38 | 0 |
-| sprite_botella | 875 | 185 | 255 |
-| sprite_lata | 0 | 38 | 193 |
-| pepsi_botella | 0 | 0 | 331 |
-| pepsi_lata | 0 | 0 | 283 |
-| 7up_lata | 0 | 0 | 319 |
+| clase | again_aug | cold_drinks | darians_bottle | lamar_grocery_color | rosd_final_hr |
+|---|---|---|---|---|---|
+| coca_botella | 593 | 697 | 355 | 106 | 283 |
+| coca_lata | 0 | 760 | 447 | 78 | 322 |
+| fanta_botella | 421 | 738 | 468 | 62 | 316 |
+| fanta_lata | 0 | 407 | 0 | 38 | 0 |
+| sprite_botella | 534 | 602 | 581 | 160 | 254 |
+| sprite_lata | 0 | 504 | 0 | 38 | 192 |
+| pepsi_botella | 878 | 640 | 0 | 0 | 326 |
+| pepsi_lata | 0 | 553 | 0 | 0 | 283 |
+| 7up_lata | 0 | 528 | 0 | 0 | 318 |
 
 Descartes por motivo:
 
-| clase | borrosa | chica | duplicada | duplicada_entre_splits | duplicada_otra_clase |
-|---|---|---|---|---|---|
-| coca_botella | 4 | 5 | 5 | 3 | 0 |
-| coca_lata | 0 | 0 | 2 | 3 | 0 |
-| fanta_botella | 3 | 5 | 3 | 4 | 0 |
-| fanta_lata | 0 | 0 | 0 | 0 | 0 |
-| sprite_botella | 2 | 1 | 5 | 1 | 0 |
-| sprite_lata | 0 | 0 | 0 | 0 | 0 |
-| pepsi_botella | 0 | 0 | 2 | 2 | 1 |
-| pepsi_lata | 1 | 0 | 5 | 4 | 0 |
-| 7up_lata | 2 | 0 | 5 | 3 | 1 |
+| clase | borrosa | chica | color_azul | color_gris | color_naranja | color_oscuro | color_rojo | color_verde | duplicada | duplicada_entre_splits | duplicada_otra_clase |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| coca_botella | 22 | 1211 | 0 | 594 | 0 | 534 | 608 | 0 | 6 | 3 | 0 |
+| coca_lata | 3 | 2 | 0 | 31 | 0 | 0 | 439 | 0 | 2 | 3 | 0 |
+| fanta_botella | 12 | 804 | 0 | 582 | 931 | 0 | 0 | 0 | 4 | 4 | 0 |
+| fanta_lata | 3 | 4 | 0 | 7 | 302 | 0 | 0 | 0 | 2 | 0 | 0 |
+| sprite_botella | 8 | 750 | 0 | 446 | 0 | 501 | 0 | 423 | 5 | 1 | 0 |
+| sprite_lata | 0 | 1 | 0 | 5 | 0 | 0 | 0 | 159 | 0 | 0 | 0 |
+| pepsi_botella | 8 | 1531 | 736 | 808 | 0 | 0 | 0 | 0 | 2 | 2 | 1 |
+| pepsi_lata | 3 | 10 | 117 | 14 | 0 | 0 | 0 | 0 | 5 | 4 | 0 |
+| 7up_lata | 5 | 16 | 0 | 24 | 0 | 0 | 0 | 254 | 5 | 3 | 1 |
 
-Nitidez (varianza del Laplaciano a 128 px de alto): percentiles 5/25/50 = 177 / 413 / 770.
+Nitidez (varianza del Laplaciano a 128 px de alto): percentiles 5/25/50 = 217 / 585 / 1246.
 
 Verificación de fugas: **sin fugas**.
 
@@ -411,16 +516,7 @@ Verificación de fugas: **sin fugas**.
 
 ## Avisos
 
-- multiclase: `fanta_lata` tiene 31 cajas en train (< 300)
-- multiclase: `sprite_lata` tiene 181 cajas en train (< 300)
-- multiclase: `pepsi_botella` tiene 266 cajas en train (< 300)
-- multiclase: `pepsi_lata` tiene 223 cajas en train (< 300)
-- multiclase: `7up_lata` tiene 251 cajas en train (< 300)
-- recortes: `fanta_lata` tiene 30 recortes en train (< 300)
-- recortes: `sprite_lata` tiene 180 recortes en train (< 300)
-- recortes: `pepsi_botella` tiene 264 recortes en train (< 300)
-- recortes: `pepsi_lata` tiene 218 recortes en train (< 300)
-- recortes: `7up_lata` tiene 244 recortes en train (< 300)
+- multiclase: `fanta_lata` tiene 214 cajas en train (< 300)
 
 ## Conclusiones y propuestas
 
@@ -434,23 +530,17 @@ Verificación de fugas: **sin fugas**.
   subdividen por pHash cercano (Hamming ≤ 10).
 - **lamar_grocery**: las etiquetas de sus carpetas valid/ y test/ están desplazadas respecto de los
   productos (verificado a ojo en v1 y v9); solo se usa train/ de la v1 (color).
-- **fanta_lata casi no tiene datos** (~31 cajas / 30 recortes en train, todos de lamar) y sprite_lata,
-  pepsi_botella, pepsi_lata y 7up_lata quedan por debajo de 300. Paliativo inmediato: correr
-  `datos_recortes.py --copias-train 3` (usa más copias aumentadas de Roboflow, sin fugas) o
-  ponderar clases al entrenar. Propuesta de fondo, en orden:
-  1. Agregar `cold-drinks-cftkw/cold-drinks-qki32` (CC BY 4.0, v1, 1950 imágenes, ya usado en el
-     proyecto clasificador-bebidas): 'fanta can' 184, 'sprite can' 128, '7up can' 179, 'pepsi can' 126,
-     'pepsi bottel' 177, 'coca cola can' 156 cajas.
-  2. Agregar `again/aug-tygyc` (CC BY 4.0, v5): 'fanta lon 330' 200, 'sprite lon 330' 185,
-     'pepsi lon 330' 142, '7up lon 330' 114, 'pepsi_bottle' 1064 cajas ('lon' = lata, 'chai' = botella).
-  3. Sintéticos (notebook 03): recortes de latas recortadas con rembg pegados sobre fondos de góndola,
-     sobre todo para fanta_lata y sprite_lata.
-  4. Fotos propias de la maqueta para las latas que siguen cortas.
-  Agregar un dataset es una entrada nueva en `src/datos/fuentes.py` + correr el pipeline.
+- **Segunda ronda** (aprobada): se sumaron cold_drinks (todas las salidas) y again_aug (solo recortes:
+  góndolas reales pero con etiquetado incompleto) y un **control de color por clase** que descarta
+  cajas con etiqueta equivocada (ver la sección de control de color). Los splits de la primera ronda
+  se mantuvieron: 0 imágenes cambiaron de split; solo se sortearon las nuevas.
+- Con eso todas las clases superan 300 recortes en train. En el multiclase **fanta_lata sigue corta**
+  (cajas en train < 300; las fuentes de latas de Fanta son lamar y cold_drinks). Propuesta: sintéticos
+  de fanta_lata (notebook 03) y fotos propias de la maqueta; como paliativo, ponderar la clase.
 
 ## Pendientes
 
 - SKU-110K (13,6 GB): opcional, no descargado. `scripts/datos_sku110k.py --max-imagenes 1500 --confirmar`
   extrae un subconjunto en streaming (igual baja los 13,6 GB) y lo suma al detector_1clase.
 - bottle_can_cup y tusafe_bottle_can: requieren fork al workspace propio + generar versión en Roboflow.
-- El remapeo (`config/remapeo_clases.yaml`) es un BORRADOR a aprobar.
+- Remapeo aprobado en la 1.ª ronda; las entradas de cold_drinks y again_aug están pendientes de aprobación.

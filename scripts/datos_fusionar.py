@@ -20,6 +20,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from src.config import nombres_clases  # noqa: E402
 from src.datos.fusion import MODOS, construir, conteos  # noqa: E402
+from src.datos.color import cargar_rechazos  # noqa: E402
 from src.datos.indice import cargar_indice  # noqa: E402
 from src.datos.remapeo import cargar_remapeo, validar_remapeo  # noqa: E402
 from src.datos.rutas import (  # noqa: E402
@@ -41,6 +42,9 @@ def main() -> None:
     if df.empty or "split" not in df.columns:
         sys.exit("Falta el índice: corré scripts/datos_indexar.py")
     remapeo = cargar_remapeo(RUTA_REMAPEO)
+    rechazos = cargar_rechazos(DIR_FUSION / "_control_color.csv")
+    if not rechazos:
+        print("AVISO: no hay control de color (corré scripts/datos_color.py)")
     clases = nombres_clases()
     errores = validar_remapeo(remapeo, clases)
     if not remapeo or errores:
@@ -54,7 +58,7 @@ def main() -> None:
             continue
         print(f"\n=== {modo} ===")
         man = construir(df, DIR_RAW, DIR_FUSION / modo, modo, remapeo, nombres, clases, alias_por_modo[modo],
-                        args.copias_train, args.max_negativos, prioridad_alias())
+                        args.copias_train, args.max_negativos, prioridad_alias(), rechazos)
         if man.empty:
             print("  (vacío)")
             continue

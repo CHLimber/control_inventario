@@ -58,6 +58,21 @@ FUENTES: list[dict] = [
              "desde arriba (~25 por imagen). Útil para el detector (escenas densas); no para el multiclase "
              "ni el clasificador, porque una tapa no representa la vista frontal de la góndola y sus "
              "~54 000 cajas aplastarían a las demás fuentes."},
+    # --- Agregadas en la 2.ª ronda (aprobadas por el estudiante) para las latas y Pepsi ---
+    {"alias": "cold_drinks", "workspace": "cold-drinks-cftkw", "project": "cold-drinks-qki32",
+     "tipo": "marcas", "uso": "entrenamiento", "version": None, "usar_en": TODO,
+     "nota": "BUENO para marcas. Imágenes de catálogo/web (envase sobre fondo blanco, pocas fotos reales), "
+             "cajas completas, botellas y latas separadas. Trae variantes rotuladas como la marca "
+             "(Fanta frutilla/uva, Sprite Zero, 7up Free, Pepsi Diet): el control de color filtra las "
+             "más obvias. Brecha de dominio con la góndola real."},
+    {"alias": "again_aug", "workspace": "again", "project": "aug-tygyc",
+     "tipo": "marcas", "uso": "entrenamiento", "version": None, "usar_en": ("recortes",),
+     "nota": "REGULAR. Góndolas reales de supermercado (muy cerca de nuestro caso), pero con ETIQUETADO "
+             "INCOMPLETO: muchas botellas y todas las latas visibles quedan sin caja, así que no sirve para "
+             "los datasets YOLO (enseñaría que un producto es fondo). La v5 solo trae 11 clases sin formato "
+             "(las 77 del proyecto con 'lon'/'chai' no están en ninguna versión); son botellas -> *_botella. "
+             "Aumentos fuertes (mosaicos, grises, ruido): el control de color descarta los recortes en grises. "
+             "Solo se usa para los recortes del clasificador."},
     # --- Opcional, fuera de Roboflow: lo arma scripts/datos_sku110k.py (no lo baja datos_descargar.py) ---
     {"alias": "sku110k_sub", "workspace": "ultralytics", "project": "SKU-110K", "origen": "sku110k",
      "tipo": "generico", "uso": "entrenamiento", "version": None, "usar_en": ("detector",),
@@ -78,26 +93,20 @@ NOTAS_REPORTE = """\
   subdividen por pHash cercano (Hamming ≤ 10).
 - **lamar_grocery**: las etiquetas de sus carpetas valid/ y test/ están desplazadas respecto de los
   productos (verificado a ojo en v1 y v9); solo se usa train/ de la v1 (color).
-- **fanta_lata casi no tiene datos** (~31 cajas / 30 recortes en train, todos de lamar) y sprite_lata,
-  pepsi_botella, pepsi_lata y 7up_lata quedan por debajo de 300. Paliativo inmediato: correr
-  `datos_recortes.py --copias-train 3` (usa más copias aumentadas de Roboflow, sin fugas) o
-  ponderar clases al entrenar. Propuesta de fondo, en orden:
-  1. Agregar `cold-drinks-cftkw/cold-drinks-qki32` (CC BY 4.0, v1, 1950 imágenes, ya usado en el
-     proyecto clasificador-bebidas): 'fanta can' 184, 'sprite can' 128, '7up can' 179, 'pepsi can' 126,
-     'pepsi bottel' 177, 'coca cola can' 156 cajas.
-  2. Agregar `again/aug-tygyc` (CC BY 4.0, v5): 'fanta lon 330' 200, 'sprite lon 330' 185,
-     'pepsi lon 330' 142, '7up lon 330' 114, 'pepsi_bottle' 1064 cajas ('lon' = lata, 'chai' = botella).
-  3. Sintéticos (notebook 03): recortes de latas recortadas con rembg pegados sobre fondos de góndola,
-     sobre todo para fanta_lata y sprite_lata.
-  4. Fotos propias de la maqueta para las latas que siguen cortas.
-  Agregar un dataset es una entrada nueva en `src/datos/fuentes.py` + correr el pipeline.
+- **Segunda ronda** (aprobada): se sumaron cold_drinks (todas las salidas) y again_aug (solo recortes:
+  góndolas reales pero con etiquetado incompleto) y un **control de color por clase** que descarta
+  cajas con etiqueta equivocada (ver la sección de control de color). Los splits de la primera ronda
+  se mantuvieron: 0 imágenes cambiaron de split; solo se sortearon las nuevas.
+- Con eso todas las clases superan 300 recortes en train. En el multiclase **fanta_lata sigue corta**
+  (cajas en train < 300; las fuentes de latas de Fanta son lamar y cold_drinks). Propuesta: sintéticos
+  de fanta_lata (notebook 03) y fotos propias de la maqueta; como paliativo, ponderar la clase.
 
 ## Pendientes
 
 - SKU-110K (13,6 GB): opcional, no descargado. `scripts/datos_sku110k.py --max-imagenes 1500 --confirmar`
   extrae un subconjunto en streaming (igual baja los 13,6 GB) y lo suma al detector_1clase.
 - bottle_can_cup y tusafe_bottle_can: requieren fork al workspace propio + generar versión en Roboflow.
-- El remapeo (`config/remapeo_clases.yaml`) es un BORRADOR a aprobar.
+- Remapeo aprobado en la 1.ª ronda; las entradas de cold_drinks y again_aug están pendientes de aprobación.
 """
 
 
