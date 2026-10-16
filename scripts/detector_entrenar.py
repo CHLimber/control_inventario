@@ -88,13 +88,25 @@ def buscar_sinteticos(variante: str, raiz: Path | None = None) -> list[Path]:
     """Carpetas images/train de sintéticos. Busca, en orden:
     <sinteticos>/<detector_1clase|multiclase>/images/train, <sinteticos>/<1clase|multiclase>/images/train,
     <sinteticos>/images/train. Las etiquetas deben estar en la carpeta labels/ hermana, con los ids de
-    config/clases.json (en 1clase da igual: se entrena con single_cls=True y toda caja es 'producto')."""
+    config/clases.json (en 1clase da igual: se entrena con single_cls=True y toda caja es 'producto').
+    También acepta el formato del generador (src/sinteticos): <lote>/<1clase|multiclase>/images/ sin
+    subcarpeta train. Si `raiz` no es un lote, se usa el lote más reciente dentro de ella."""
     raiz = raiz or DIR_DATOS / "sinteticos"
-    for c in (raiz / VARIANTES[variante], raiz / variante, raiz):
-        d = c / "images" / "train"
-        if imagenes_de(d):
-            return [d]
+    lotes = sorted((p for p in raiz.glob("lote_*") if p.is_dir()), key=lambda p: p.stat().st_mtime,
+                   reverse=True) if raiz.is_dir() else []
+    for base in [raiz] + lotes:
+        for c in (base / VARIANTES[variante], base / variante, base):
+            for d in (c / "images" / "train", c / "images"):
+                if imagenes_de(d):
+                    return [d]
     return []
+
+
+def etiquetas_de(dir_imagenes: Path) -> Path:
+    """Carpeta de etiquetas YOLO que corresponde a una de imágenes (convención de Ultralytics)."""
+    if dir_imagenes.name == "images":
+        return dir_imagenes.parent / "labels"
+    return dir_imagenes.parent.parent / "labels" / dir_imagenes.name
 
 
 def muestra(imgs: list[Path], n: int, semilla: int = 0) -> list[Path]:
@@ -144,7 +156,7 @@ def copiar_subconjunto(imgs: list[Path], destino: Path, split: str) -> list[Path
     dl.mkdir(parents=True)
     copiadas = []
     for p in imgs:
-        lbl = p.parent.parent.parent / "labels" / split / (p.stem + ".txt")
+        lbl = etiquetas_de(p.parent) / (p.stem + ".txt")
         try:
             shutil.copy2(p, di / p.name)
             if lbl.exists():

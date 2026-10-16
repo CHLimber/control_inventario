@@ -27,7 +27,7 @@ RAIZ_REPO = Path(__file__).resolve().parent.parent
 if str(RAIZ_REPO) not in sys.path:
     sys.path.insert(0, str(RAIZ_REPO))
 
-from scripts.detector_entrenar import (DIR_RUNS, VARIANTES, buscar_sinteticos, dir_dataset,  # noqa: E402
+from scripts.detector_entrenar import (DIR_RUNS, VARIANTES, buscar_sinteticos, dir_dataset, etiquetas_de,  # noqa: E402
                                        imagenes_de, nombres_variante)
 from src.config import DIR_MODELOS  # noqa: E402
 
@@ -63,10 +63,26 @@ def agregar_split(z: zipfile.ZipFile, origen: Path, destino: str, split: str, mu
     return n
 
 
+def agregar_carpeta(z: zipfile.ZipFile, dir_imgs: Path, destino: str, split: str, muestra: int = 0) -> int:
+    """Como agregar_split, pero desde una carpeta de imágenes cualquiera (etiquetas según Ultralytics)."""
+    imgs = imagenes_de(dir_imgs)
+    if muestra:
+        imgs = imgs[:: max(1, len(imgs) // muestra)][:muestra]
+    dir_lbl = etiquetas_de(dir_imgs)
+    for img in imgs:
+        z.write(img, f"{destino}/images/{split}/{img.name}", compress_type=zipfile.ZIP_STORED)
+        lbl = dir_lbl / (img.stem + ".txt")
+        if lbl.exists():
+            z.write(lbl, f"{destino}/labels/{split}/{lbl.name}", compress_type=zipfile.ZIP_DEFLATED)
+    return len(imgs)
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--variantes", nargs="+", choices=list(VARIANTES), default=list(VARIANTES))
     ap.add_argument("--con-sinteticos", action="store_true")
+    ap.add_argument("--sinteticos", type=Path, default=None,
+                    help="lote de sintéticos (por defecto el más reciente en datos/sinteticos/)")
     ap.add_argument("--con-s", action="store_true", help="incluir también yolo26s.pt")
     ap.add_argument("--muestra", type=int, default=0, help="solo N imágenes por split (para probar el zip)")
     ap.add_argument("--salida", type=Path, default=DIR_RUNS / "colab" / f"{RAIZ_ZIP}.zip")
@@ -77,9 +93,11 @@ def main(argv=None):
     with zipfile.ZipFile(a.salida, "w", zipfile.ZIP_DEFLATED) as z:
         sint = []
         if a.con_sinteticos:
-            sint = buscar_sinteticos(a.variantes[0])
+            # Se empaquetan los sintéticos MULTICLASE: sirven para las dos variantes (en 1clase se
+            # entrena con single_cls=True, así que los ids de clase dan igual).
+            sint = buscar_sinteticos("multiclase", a.sinteticos)
             if sint:
-                n = agregar_split(z, sint[0].parent.parent, f"{RAIZ_ZIP}/sinteticos", "train", a.muestra)
+                n = agregar_carpeta(z, sint[0], f"{RAIZ_ZIP}/sinteticos", "train", a.muestra)
                 resumen.append(f"sinteticos/train: {n} imágenes (de {sint[0]})")
             else:
                 print("AVISO: no hay sintéticos; se empaqueta sin ellos.")
