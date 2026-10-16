@@ -10,6 +10,7 @@ PyTorch convivan en el mismo proceso y corre yolo26n.pt sobre una imagen de prue
 from __future__ import annotations
 
 import importlib
+import os
 import sys
 import time
 from pathlib import Path
@@ -53,6 +54,10 @@ def main() -> int:
 
     from ultralytics import YOLO
     from ultralytics.utils import ASSETS
+    # Importar ultralytics baja torch a 1 hilo; para inferir en CPU conviene usar más.
+    print("Hilos de PyTorch tras importar ultralytics:", torch.get_num_threads())
+    torch.set_num_threads(max(1, (os.cpu_count() or 2) // 2))
+    print("Hilos de PyTorch para la prueba:", torch.get_num_threads())
     pesos = RAIZ / "modelos" / "yolo26n.pt"
     pesos.parent.mkdir(exist_ok=True)
     modelo = YOLO(str(pesos) if pesos.exists() else "yolo26n.pt")
