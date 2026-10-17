@@ -1,5 +1,5 @@
-# Generado por scripts/datos_remapeo.py y revisado a mano. APROBADO (1.ª ronda); cold_drinks y
-# again_aug (2.ª ronda) pendientes de aprobación.
+# BORRADOR generado por scripts/datos_remapeo.py y revisado a mano por el agente Datos.
+# 3.ª ronda (cold_drinks_2, hccb_overall): propuesta pendiente de aprobación.
 # Lo APRUEBA el orquestador. Las entradas existentes se respetan al regenerar (salvo --regenerar).
 #
 # Formato:  <alias_dataset>: { <clase_original>: <clase_nuestra> | solo_detector | descartar }
@@ -7,6 +7,9 @@
 #   - solo_detector = es una bebida/envase y sirve como "producto" para el detector de 1 clase,
 #     pero su marca no es una de las nuestras o no es confiable (no entra al multiclase ni a recortes;
 #     en el multiclase queda como fondo).
+#   - auto:<marca> = el dataset da la marca pero no el formato (p. ej. auto:pepsi): botella o lata
+#     según la forma de la caja (src/datos/remapeo.py: RATIO_LATA / RATIO_BOTELLA); si es dudosa, solo_detector.
+#     auto:<marca>:botella acepta solo botellas por la forma (lo que no encaje queda como solo_detector).
 #   - descartar = no es un producto de interés (snacks, vasos, fondo...): la caja se elimina.
 #   - Una clase original que no figure acá se trata como "descartar".
 #
@@ -37,7 +40,7 @@ darians_bottle:
   Sprite_Bottle: sprite_botella
 
 rosd_final_hr:
-  7up_can: 7up_lata
+  7up_can: solo_detector
   beer_can: solo_detector
   coke_bottle: coca_botella
   coke_can: coca_lata
@@ -185,8 +188,8 @@ soda_bottles:
   sprite: sprite_botella
 
 cold_drinks:
-  7up bottel: solo_detector  # no hay clase 7up_botella
-  7up can: 7up_lata
+  7up bottel: solo_detector
+  7up can: solo_detector
   Red Bull bottel: solo_detector
   Red Bull can: solo_detector
   clemon bottel: solo_detector
@@ -214,9 +217,9 @@ cold_drinks:
   tango can: solo_detector
 
 again_aug:
-  Coca Cola: coca_botella  # revisado: góndolas de botellas; las latas no están etiquetadas
+  Coca Cola: coca_botella
   'Coca Cola ': coca_botella
-  Coco Cola: solo_detector  # revisado: dudosa (cajas más anchas, ¿latas?)
+  Coco Cola: solo_detector
   Fanta: fanta_botella
   'Fanta ': fanta_botella
   Mountain Dew: solo_detector
@@ -225,3 +228,43 @@ again_aug:
   'Pepsi ': pepsi_botella
   Sprite: sprite_botella
   'Sprite ': sprite_botella
+
+cold_drinks_2:
+  Coca Cola: auto:coca:botella
+  Fanta: auto:fanta:botella
+  Mountain Dew: solo_detector
+  Pepsi: auto:pepsi:botella
+  Sprite: auto:sprite:botella
+
+hccb_overall:
+  Coca Cola Can 330 ml: coca_lata
+  Coca Cola Diet can 330 ml: solo_detector
+  Coca Cola PET 1000 ML: coca_botella
+  Coca Cola PET 750 ml: coca_botella
+  Coca Cola PET Zero 500 ML: solo_detector
+  Coca-Cola Pet 250 ml: coca_botella
+  Fanta PET 250 ml: fanta_botella
+  Fanta PET 750 ml: fanta_botella
+  Kinley PET 1000 ml: solo_detector
+  Kinley PET 500 ml: solo_detector
+  Limca PET 250 ml: solo_detector
+  Limca PET 750 ml: solo_detector
+  Sprite Can 330 ml: sprite_lata
+  Sprite PET 1000 ML: sprite_botella
+  Sprite PET 2250 ml: sprite_botella
+  Sprite PET 250 ml: sprite_botella
+  Sprite PET 750 ml: sprite_botella
+  Sprite PET Zero 500 Ml: solo_detector
+  Thumbs Up PET 1000 ML: solo_detector
+  Thumbs Up PET 2250 ml: solo_detector
+  Thumbs Up PET 250 ml: solo_detector
+  Thumbs Up PET 750 ml: solo_detector
+
+smart_vending:
+  # Latas reales, pero muchas fotos son de la tapa o de lado y se cuelan botellas de 2 L rotuladas como lata:
+  # solo se acepta lata de frente por la forma de la caja (alto/ancho 1,4 a 2,15).
+  coca-cola-can: auto:coca:lata
+  milk_box: descartar
+  pepsi-can: auto:pepsi:lata
+  water: solo_detector
+

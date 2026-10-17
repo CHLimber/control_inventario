@@ -45,8 +45,14 @@ def nitidez(recorte: Image.Image) -> float:
 def generar(sel: pd.DataFrame, dir_raw: Path, dir_salida: Path, remapeo: dict,
             nombres_por_alias: dict[str, list[str]], clases: list[str], margen: float = 0.05,
             min_lado: int = 32, min_nitidez: float = 40.0, calidad_jpeg: int = 92,
-            rechazos_color: dict[tuple[str, int], str] | None = None) -> pd.DataFrame:
+            rechazos_color: dict[tuple[str, int], str] | None = None,
+            topes: dict[str, int] | None = None, tope_por_imagen: int = 2) -> pd.DataFrame:
     """Genera los recortes de las imágenes seleccionadas (columnas: alias, ruta, grupo, split).
+
+    ``topes`` = {alias: máximo de recortes por clase en train} para datasets enormes (una góndola trae
+    más de 15 cajas por foto): en val y test el tope es el 12 %, y de una misma imagen salen a lo sumo
+    ``tope_por_imagen`` recortes por clase, para que el subconjunto reparta las fotos y no se agote
+    en las primeras. Los que no entran quedan en el índice con motivo ``tope_por_origen``.
 
     Se procesa train antes que val/test: si un recorte de val/test es idéntico (pHash) a uno ya
     guardado en otro split, se descarta para no filtrar información.
@@ -55,6 +61,8 @@ def generar(sel: pd.DataFrame, dir_raw: Path, dir_salida: Path, remapeo: dict,
         shutil.rmtree(dir_salida / split, ignore_errors=True)
     vistos: dict[str, tuple[str, str]] = {}  # phash -> (split, clase)
     rechazos_color = rechazos_color or {}
+    topes = topes or {}
+    guardados: dict[tuple[str, str, str], int] = {}
     filas = []
     orden = {s: i for i, s in enumerate(SPLITS)}
     sel = sel.sort_values(["split", "alias", "ruta"], key=lambda c: c.map(orden) if c.name == "split" else c)
@@ -72,11 +80,19 @@ def generar(sel: pd.DataFrame, dir_raw: Path, dir_salida: Path, remapeo: dict,
                 filas.append({"origen": r.alias, "imagen": r.ruta, "imagen_original": r.grupo, "split": r.split,
                               "clase": clases[c[0]], "caja": i, "motivo_descarte": "imagen_ilegible"})
             continue
+        por_imagen: dict[str, int] = {}
         for i, (cid, xc, yc, w, h) in enumerate(cajas):
             clase = clases[cid]
             fila = {"origen": r.alias, "imagen": r.ruta, "imagen_original": r.grupo, "split": r.split,
                     "clase": clase, "caja": i, "ancho": 0, "alto": 0, "nitidez": np.nan, "phash": "",
                     "ruta_recorte": "", "motivo_descarte": ""}
+            tope = topes.get(r.alias)
+            if tope:
+                limite = tope if r.split == "train" else max(1, round(tope * 0.12))
+                if guardados.get((r.alias, clase, r.split), 0) >= limite or por_imagen.get(clase, 0) >= tope_por_imagen:
+                    fila["motivo_descarte"] = "tope_por_origen"
+                    filas.append(fila)
+                    continue
             recorte, bw, bh = recortar(img, (xc, yc, w, h), margen)
             fila["ancho"], fila["alto"] = bw, bh
             if min(bw, bh) < min_lado:
@@ -105,6 +121,9 @@ def generar(sel: pd.DataFrame, dir_raw: Path, dir_salida: Path, remapeo: dict,
                 filas.append(fila)
                 continue
             vistos[ph] = (r.split, clase)
+            if tope:
+                guardados[(r.alias, clase, r.split)] = guardados.get((r.alias, clase, r.split), 0) + 1
+                por_imagen[clase] = por_imagen.get(clase, 0) + 1
             destino = dir_salida / r.split / clase / f"{r.alias}__{Path(r.ruta).stem}__{i}.jpg"
             destino.parent.mkdir(parents=True, exist_ok=True)
             recorte.save(destino, "JPEG", quality=calidad_jpeg)

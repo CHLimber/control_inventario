@@ -131,11 +131,11 @@ Dos opciones. La **económica** sirve perfectamente para la práctica.
 
 ### Envases (lo más importante)
 
-- **4-6 por clase**, 9 clases ⇒ unos 40-50 envases. Los scripts suponen **5 por clase** y, de las
+- **4-6 por clase**, 8 clases ⇒ unos 35-45 envases. Los scripts suponen **5 por clase** y, de las
   botellas, **2 grandes (2 L) + 3 chicas (500-600 ml)** por marca. Si tenés otra cantidad, pasala al
   plan con `--envases` y `--grandes` (ver sección 5).
 - Clases: `coca_botella`, `coca_lata`, `fanta_botella`, `fanta_lata`, `sprite_botella`,
-  `sprite_lata`, `pepsi_botella`, `pepsi_lata`, `7up_lata` (no hay 7Up botella).
+  `sprite_lata`, `pepsi_botella`, `pepsi_lata`.
 - Etiquetas **en buen estado**, con su **tapa original** (el color de la tapa también es una pista
   para el modelo). Varias versiones de etiqueta de la misma marca es bueno: más variedad real.
 - **Relleno con agua coloreada** (que se vean como llenas):
@@ -144,7 +144,7 @@ Dos opciones. La **económica** sirve perfectamente para la práctica.
 |---|---|
 | Coca-Cola, Pepsi | agua + colorante caramelo/negro, o café instantáneo bien cargado (oscuro, casi negro) |
 | Fanta | agua + colorante naranja |
-| Sprite, 7Up | agua sola (transparente) |
+| Sprite | agua sola (transparente) |
 
   Llená hasta el nivel normal del producto (unos 2-3 cm debajo de la tapa) y cerrá bien. Si usás
   café, cambialo cada 1-2 semanas (fermenta). Unas gotas de lavandina evitan hongos.
@@ -219,7 +219,7 @@ maqueta es distinta, regeneralo antes de empezar**, por ejemplo:
 
 ```bat
 conda activate inventariovision
-python scripts\maqueta_plan.py --sesiones 1 --escenas 26 --ancho 65 --envases 4,7up_lata=6 --grandes 1
+python scripts\maqueta_plan.py --sesiones 1 --escenas 26 --ancho 65 --envases 4,pepsi_lata=6 --grandes 1
 ```
 
 El plan dice, escena por escena, qué marca va en cada lugar de cada nivel (izquierda → derecha),

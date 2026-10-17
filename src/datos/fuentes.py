@@ -7,6 +7,10 @@
            Vacío = se descarga y se reporta, pero no se usa.
 - splits_origen: (opcional) solo se usan las imágenes de estas carpetas del export de Roboflow.
 - version: None = la última disponible (se resuelve con la API al descargar).
+- biblioteca: (opcional) True = sus imágenes de train alimentan la biblioteca de envases de los sintéticos
+           (scripts/datos_biblioteca.py) aunque no entren al multiclase.
+- max_recortes_por_clase: (opcional) tope de recortes por clase en train para datasets muy grandes
+           (en val/test el 12 %): evita que una sola fuente aplaste a las demás.
 - nota:    veredicto de calidad (sale en docs/datos.md).
 La licencia y la versión efectiva quedan registradas en DIR_DATOS/raw/<alias>/_fuente.json.
 """
@@ -33,7 +37,7 @@ FUENTES: list[dict] = [
              "-> solo_detector. 'Cans' son latas Arizona y 'Bottle-Detection' botellas de agua."},
     {"alias": "rosd_final_hr", "workspace": "rosd", "project": "final_hr",
      "tipo": "marcas", "uso": "entrenamiento", "version": None, "usar_en": TODO,
-     "nota": "BUENO y CLAVE: única fuente de pepsi_botella, pepsi_lata y 7up_lata. Envases chinos (logos en "
+     "nota": "BUENO y CLAVE: única fuente de pepsi_botella y pepsi_lata (7up queda como solo_detector). Envases chinos (logos en "
              "chino para Coca y Sprite), fotos de mano/mesa, cajas completas, sin aumentos. Mirinda (lata "
              "naranja, parecida a Fanta) queda como solo_detector."},
     {"alias": "coca_raspberry", "workspace": "new-workspace-ihwlk", "project": "coca-cola-raspberry",
@@ -63,7 +67,7 @@ FUENTES: list[dict] = [
      "tipo": "marcas", "uso": "entrenamiento", "version": None, "usar_en": TODO,
      "nota": "BUENO para marcas. Imágenes de catálogo/web (envase sobre fondo blanco, pocas fotos reales), "
              "cajas completas, botellas y latas separadas. Trae variantes rotuladas como la marca "
-             "(Fanta frutilla/uva, Sprite Zero, 7up Free, Pepsi Diet): el control de color filtra las "
+             "(Fanta frutilla/uva, Sprite Zero, Pepsi Diet): el control de color filtra las "
              "más obvias. Brecha de dominio con la góndola real."},
     {"alias": "again_aug", "workspace": "again", "project": "aug-tygyc",
      "tipo": "marcas", "uso": "entrenamiento", "version": None, "usar_en": ("recortes",),
@@ -73,6 +77,34 @@ FUENTES: list[dict] = [
              "(las 77 del proyecto con 'lon'/'chai' no están en ninguna versión); son botellas -> *_botella. "
              "Aumentos fuertes (mosaicos, grises, ruido): el control de color descarta los recortes en grises. "
              "Solo se usa para los recortes del clasificador."},
+    # --- Agregadas en la 3.ª ronda (2026-10-17): más datos reales de góndola para entrenar en Colab ---
+    {"alias": "cold_drinks_2", "workspace": "cold-drinks", "project": "2-4uv7p",
+     "tipo": "marcas", "uso": "entrenamiento", "version": None, "usar_en": ("detector", "recortes"),
+     "max_recortes_por_clase": 1500, "biblioteca": True,
+     "nota": "BUENO y CLAVE para el detector. Fotos reales de góndolas y heladeras con filas densas de envases "
+             "de frente, ~10 000 imágenes sin aumentos y ~157 000 cajas (unas 16 por foto). La v7 fusionó las "
+             "131 clases del proyecto en 5 marcas (Coca Cola, Fanta, Pepsi, Sprite, Mountain Dew): se perdió el "
+             "formato ('chai' = botella, 'lon' = lata en el proyecto original). Casi no hay latas: revisado a ojo, todo "
+             "lo que la forma de la caja daba como lata eran botellas de 2 L tapadas o cortadas. Por eso el "
+             "destino es 'auto:<marca>:botella' (solo botellas, por la forma de la caja). No entra al multiclase: "
+             "las demás cajas quedarían sin etiquetar. Para los recortes se topa a 1 500 por clase y 2 por imagen. "
+             "Alguna foto es de banco de imágenes (marca de agua). Envases asiáticos. Solo ~430 fotos originales "
+             "(cada una viene ~23 veces con variaciones leves)."},
+    {"alias": "hccb_overall", "workspace": "coca-cola", "project": "hccb-overall",
+     "tipo": "marcas", "uso": "entrenamiento", "version": None, "usar_en": ("detector", "recortes"),
+     "biblioteca": True,
+     "nota": "BUENO. Góndolas reales de retail (HCCB, India), 400 imágenes con cajas por SKU: formato en el "
+             "nombre ('Can' / 'PET'). Aporta latas de Coca-Cola y Sprite. Envases de la India. No entra al multiclase: "
+             "la mitad de las cajas son marcas que no son nuestras (Thums Up, Limca, Kinley) y quedarían sin etiquetar."},
+    # --- Latas (3.ª ronda): latas de verdad, pero en escenas sueltas (no góndolas): solo recortes ---
+    {"alias": "smart_vending", "workspace": "tuduchiep", "project": "smart-vending-4classes",
+     "tipo": "marcas", "uso": "entrenamiento", "version": None, "usar_en": ("recortes",),
+     "max_recortes_por_clase": 1200,
+     "nota": "REGULAR. Latas de Coca-Cola y Pepsi (más de 1 000 cajas cada una), fotos de una lata en la mano o sobre una "
+             "mesa en interiores. No son góndolas, así que solo se usa para los recortes del clasificador (topado a "
+             "1 200 por clase). Se cuelan botellas de 2 L rotuladas como lata y muchas fotos son de la tapa: por eso "
+             "el destino es 'auto:<marca>:lata' (solo latas de frente por la forma de la caja). 'water' y 'milk_box' no se usan. (sodacans, de it-gymnasiet-gteborg/trash-pyv9e, se "
+             "descartó: su v4 fusionó todas las marcas en una sola clase 'can'.)"},
     # --- Opcional, fuera de Roboflow: lo arma scripts/datos_sku110k.py (no lo baja datos_descargar.py) ---
     {"alias": "sku110k_sub", "workspace": "ultralytics", "project": "SKU-110K", "origen": "sku110k",
      "tipo": "generico", "uso": "entrenamiento", "version": None, "usar_en": ("detector",),
@@ -84,7 +116,7 @@ NOTAS_REPORTE = """\
 ## Conclusiones y propuestas
 
 - **No hay test externo**: ningún dataset de marcas se puede reservar entero sin dejar clases en cero
-  (rosd_final_hr es la única fuente de pepsi y 7up; darians_bottle aporta ~80 % de coca_lata).
+  (rosd_final_hr es la única fuente de pepsi; darians_bottle aporta ~80 % de coca_lata).
   El test se arma con grupos (fotos originales) de todos los datasets. La prueba de dominio real
   será la maqueta.
 - **Grupos anti-fuga**: además del id original de Roboflow, se unen las imágenes con pHash idéntico.
@@ -97,6 +129,13 @@ NOTAS_REPORTE = """\
   góndolas reales pero con etiquetado incompleto) y un **control de color por clase** que descarta
   cajas con etiqueta equivocada (ver la sección de control de color). Los splits de la primera ronda
   se mantuvieron: 0 imágenes cambiaron de split; solo se sortearon las nuevas.
+- **Tercera ronda** (2026-10-17, propuesta pendiente de aprobación): se quitó la clase `7up_lata` (quedan 8 clases;
+  las cajas de 7Up pasan a `solo_detector`) y se sumaron `cold_drinks_2` (~10 000 fotos de góndola, ~157 000
+  cajas) y `hccb_overall` (400 góndolas de retail). Ninguna entra al multiclase (tienen cajas sin etiquetar o de
+  marcas que no son nuestras); sí al detector de 1 clase y a los recortes. La v7 de `cold_drinks_2` solo trae
+  la marca, así que el formato sale de la forma de la caja (`auto:<marca>:botella` en `config/remapeo_clases.yaml`,
+  umbrales en `src/datos/remapeo.py`; solo botellas: lo que medía como lata eran botellas tapadas, verificado a
+  ojo) y sus recortes se topan a 1 500 por clase.
 - Con eso todas las clases superan 300 recortes en train. En el multiclase **fanta_lata sigue corta**
   (cajas en train < 300; las fuentes de latas de Fanta son lamar y cold_drinks). Propuesta: sintéticos
   de fanta_lata (notebook 03) y fotos propias de la maqueta; como paliativo, ponderar la clase.
@@ -106,7 +145,10 @@ NOTAS_REPORTE = """\
 - SKU-110K (13,6 GB): opcional, no descargado. `scripts/datos_sku110k.py --max-imagenes 1500 --confirmar`
   extrae un subconjunto en streaming (igual baja los 13,6 GB) y lo suma al detector_1clase.
 - bottle_can_cup y tusafe_bottle_can: requieren fork al workspace propio + generar versión en Roboflow.
-- Remapeo aprobado en la 1.ª ronda; las entradas de cold_drinks y again_aug están pendientes de aprobación.
+- Remapeo aprobado en la 1.ª ronda; las entradas de cold_drinks, again_aug, cold_drinks_2 y hccb_overall están
+  pendientes de aprobación (en particular la regla `auto:` de formato por la forma de la caja).
+- Revisar a ojo los recortes que salen de `cold_drinks_2` (botella vs. lata por forma): una botella con el
+  cuello tapado puede parecer lata.
 """
 
 

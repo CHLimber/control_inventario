@@ -169,7 +169,7 @@ class _ProductoLike(Protocol):
 
 
 def clave_marca(marca: str) -> str:
-    """'Coca-Cola' -> 'cocacola', '7Up' -> '7up'."""
+    """'Coca-Cola' -> 'cocacola', 'Sprite' -> 'sprite'."""
     return normalizar(marca).replace(" ", "")
 
 
@@ -180,7 +180,6 @@ ALIAS_MARCAS: dict[str, str] = {
     "fanta": "fanta", "fantas": "fanta",
     "sprite": "sprite", "esprite": "sprite", "sprites": "sprite",
     "pepsi": "pepsi", "pepsis": "pepsi",
-    "7up": "7up", "7 up": "7up", "seven up": "7up", "sevenup": "7up", "siete up": "7up",
 }
 ALIAS_FORMATOS: dict[str, str] = {
     "lata": "lata", "latas": "lata", "latita": "lata", "latitas": "lata",

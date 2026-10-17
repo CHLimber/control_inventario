@@ -64,10 +64,7 @@ def test_sin_fecha():
     ("coca cola en botella", {"coca_botella"}),
     ("COCA-COLA lata", {"coca_lata"}),
     ("latas de coca", {"coca_lata"}),
-    ("¿cuántas latas quedan?", {"coca_lata", "fanta_lata", "sprite_lata", "pepsi_lata", "7up_lata"}),
-    ("7 up", {"7up_lata"}),
-    ("seven up", {"7up_lata"}),
-    ("la 7Up", {"7up_lata"}),
+    ("¿cuántas latas quedan?", {"coca_lata", "fanta_lata", "sprite_lata", "pepsi_lata"}),
     ("coca lata y fanta botella", {"coca_lata", "fanta_botella"}),
     ("sprite y pepsi", {"sprite_botella", "sprite_lata", "pepsi_botella", "pepsi_lata"}),
     ("faltó pepsi_botella", {"pepsi_botella"}),          # clase del modelo

@@ -190,3 +190,105 @@ def test_limpiar_mascara_une_tapa_y_cuerpo():
     assert filas[0] == 5 and filas[-1] == 94
     assert (alfa[15:30] > 127).any(axis=1).all()   # el cuello quedó relleno
     assert obj.calidad_mascara(alfa, (0, 0, 40, 100)) == ""
+
+
+# ------------------------------------------------------------------ niveles y modos de orden
+
+@pytest.mark.parametrize("niveles", [3, 4, 5])
+def test_cantidad_de_niveles_configurable(biblioteca, niveles):
+    """3, 4 o 5 niveles: las latas siguen arriba de las botellas y las cajas caben en la foto."""
+    p = Parametros(lado_largo=640, lado_corto=480, n_niveles=niveles, p_acercamiento=0.0, p_estante_vacio=0.0,
+                   p_nivel_vacio=0.0, p_latas_medio=0.0, p_perspectiva_lateral=0.0, p_desordenado=0.0)
+    formato = {c["id"]: c["formato"] for c in CLASES}
+    esc = componer(np.random.default_rng(5), biblioteca, CLASES, [], p)
+    assert esc.meta["n_niveles"] == niveles
+    latas = [c for c in esc.cajas if formato[c[0]] == "lata"]
+    botellas = [c for c in esc.cajas if formato[c[0]] == "botella"]
+    assert latas and botellas
+    assert max(c[4] for c in latas) < min(c[4] for c in botellas)
+    H, W = esc.imagen.shape[:2]
+    for _, x1, y1, x2, y2 in esc.cajas:
+        assert 0 <= x1 < x2 <= W and 0 <= y1 < y2 <= H
+
+
+def test_mas_niveles_mas_envases(biblioteca):
+    """Un estante de 5 niveles lleva en promedio más envases que uno de 3."""
+    def medio(n):
+        p = Parametros(lado_largo=640, lado_corto=480, n_niveles=n, p_acercamiento=0.0, p_estante_vacio=0.0,
+                       p_nivel_vacio=0.0)
+        return np.mean([len(componer(np.random.default_rng(s), biblioteca, CLASES, [], p).cajas) for s in range(8)])
+    assert medio(5) > medio(3)
+
+
+def test_niveles_sorteados_incluyen_los_tres_tamanos(biblioteca):
+    p = Parametros(lado_largo=384, lado_corto=288)
+    vistos = {componer(np.random.default_rng(s), biblioteca, CLASES, [], p).meta["n_niveles"] for s in range(40)}
+    assert vistos == {3, 4, 5}
+
+
+@pytest.mark.parametrize("modo,kw", [("ordenado", {"p_ordenado": 1.0, "p_desordenado": 0.0}),
+                                      ("desordenado", {"p_desordenado": 1.0, "p_caido": 0.5}),
+                                      ("normal", {"p_ordenado": 0.0, "p_desordenado": 0.0})])
+def test_modos_de_orden_dan_cajas_validas(biblioteca, modo, kw):
+    p = Parametros(lado_largo=512, lado_corto=384, p_acercamiento=0.0, p_estante_vacio=0.0, p_nivel_vacio=0.0, **kw)
+    total = 0
+    for s in range(8):
+        esc = componer(np.random.default_rng(s), biblioteca, CLASES, [], p)
+        assert esc.meta["orden"] == modo
+        H, W = esc.imagen.shape[:2]
+        for cid, x1, y1, x2, y2 in esc.cajas:
+            assert 0 <= cid < len(NOMBRES) and 0 <= x1 < x2 <= W and 0 <= y1 < y2 <= H
+        total += len(esc.cajas)
+    assert total > 0
+
+
+def test_orden_por_bloques_contiguos():
+    from src.sinteticos.composicion import _clases_nivel
+    disp = ["a", "b", "c", "d"]
+    for s in range(10):
+        salida = _clases_nivel(np.random.default_rng(s), disp, 14, Parametros(), ordenado=True)
+        assert len(salida) == 14 and salida == sorted(salida, key=disp.index)
+
+
+def test_desordenado_tiene_envases_acostados(biblioteca):
+    """Con p_caido alto aparecen cajas más anchas que altas (envases acostados)."""
+    p = Parametros(lado_largo=640, lado_corto=480, p_acercamiento=0.0, p_estante_vacio=0.0, p_nivel_vacio=0.0,
+                   p_desordenado=1.0, p_caido=0.8, p_perspectiva_lateral=0.0)
+    anchas = sum(1 for s in range(6)
+                 for _, x1, y1, x2, y2 in componer(np.random.default_rng(s), biblioteca, CLASES, [], p).cajas
+                 if (x2 - x1) > (y2 - y1))
+    assert anchas > 0
+
+
+# ------------------------------------------------------------------ fotos de producto (Open Food Facts)
+
+def test_caja_producto_sobre_fondo_blanco():
+    img = Image.new("RGB", (300, 500), "white")
+    img.paste(Image.new("RGB", (80, 250), (200, 20, 30)), (110, 120))
+    x1, y1, x2, y2 = obj.caja_producto(img)
+    assert abs(x1 - 110) <= 6 and abs(x2 - 190) <= 6 and abs(y1 - 120) <= 6 and abs(y2 - 370) <= 6
+    assert obj.caja_producto(Image.new("RGB", (300, 500), "white")) is None
+
+
+def test_candidatos_web_y_biblioteca_sin_filtro_de_train(tmp_path):
+    web = tmp_path / "off"
+    (web / "coca_lata").mkdir(parents=True)
+    (web / "coca_botella").mkdir(parents=True)
+    for clase, tam in (("coca_lata", (90, 170)), ("coca_botella", (60, 40))):
+        im = Image.new("RGB", (400, 600), "white")
+        im.paste(Image.new("RGB", tam, (200, 20, 30)), (150, 200))
+        im.save(web / clase / "off__123.jpg")
+    (web / "indice.csv").write_text("clase,formato,codigo,archivo\ncoca_lata,lata,123,coca_lata/off__123.jpg\n"
+                                    "coca_botella,botella,123,coca_botella/off__123.jpg\n", encoding="utf-8")
+    c = {x.clase: x for x in obj.candidatos_web(web, CLASES)}
+    assert c["coca_lata"].motivo == "" and c["coca_lata"].grupo == "off__123"
+    assert c["coca_botella"].motivo == "chica"          # 40 px de alto: no sirve para recortar
+    # la biblioteca no exige que las fotos web estén en la carpeta de train
+    cache = tmp_path / "cache"
+    (cache / "coca_lata").mkdir(parents=True)
+    Image.new("RGBA", (30, 60), (200, 20, 30, 255)).save(cache / "coca_lata" / "a.png")
+    obj.escribir_indice(cache, [{"clase": "coca_lata", "formato": "lata", "origen": "off__123.jpg|0,0,1,1",
+                                 "archivo": "coca_lata/a.png"}])
+    train = tmp_path / "train"
+    train.mkdir()
+    assert obj.cargar_biblioteca(cache, [train])["coca_lata"]

@@ -7,6 +7,8 @@ ya está en el índice no se vuelve a procesar (rembg es lo lento).
 Ejemplo:
   set INVENTARIO_DATOS=<MAIN>\\datos
   python scripts/sinteticos_objetos.py --max-por-clase 400 --procesos 4 --modelo u2net
+  python scripts/sinteticos_objetos.py --fuente <DATOS>/fusion/_biblioteca            # góndolas de fuentes extra
+  python scripts/sinteticos_objetos.py --web <DATOS>/web/off                           # fotos de producto (datos_off.py)
 """
 from __future__ import annotations
 
@@ -58,6 +60,8 @@ def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--fuente", type=Path, default=DIR_DATOS / "fusion" / "multiclase",
                     help="árbol YOLO multiclase (se usa SOLO images/train y labels/train)")
+    ap.add_argument("--web", type=Path, help="carpeta con indice.csv de fotos de producto (scripts/datos_off.py); "
+                    "se usa en vez de --fuente")
     ap.add_argument("--cache", type=Path, default=DIR_DATOS / "sinteticos" / "_objetos")
     ap.add_argument("--max-por-clase", type=int, default=400)
     ap.add_argument("--modelo", default="u2net", help="modelo de rembg: u2net (mejor) | u2netp (rápido)")
@@ -71,8 +75,11 @@ def main() -> None:
 
     clases = cargar_clases()["clases"]
     t0 = time.time()
-    cands = obj.candidatos_yolo(a.fuente / "images" / "train", a.fuente / "labels" / "train", clases)
-    print(f"{len(cands)} cajas en train; motivos del filtro geométrico:")
+    if a.web:
+        cands = obj.candidatos_web(a.web, clases)
+    else:
+        cands = obj.candidatos_yolo(a.fuente / "images" / "train", a.fuente / "labels" / "train", clases)
+    print(f"{len(cands)} cajas{'' if a.web else ' en train'}; motivos del filtro geométrico:")
     for (cl, m), n in sorted(Counter((c.clase, c.motivo or "OK") for c in cands).items()):
         print(f"  {cl:15s} {m:18s} {n}")
     elegidos = obj.seleccionar(cands, a.max_por_clase, a.semilla)

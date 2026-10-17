@@ -24,4 +24,4 @@ def test_respuesta_real_usa_las_cifras_del_contexto():
     print("\n", r.respuesta)
     assert r.modelo == config.MODELO_CLAUDE, "No respondió el LLM (¿clave inválida o error de red?)"
     assert not r.sin_datos and r.respuesta
-    assert "3" in r.respuesta and "7" in r.respuesta.lower()   # 3 unidades de 7Up lata
+    assert "3" in r.respuesta and "7" in r.respuesta.lower()   # 3 unidades de Pepsi lata

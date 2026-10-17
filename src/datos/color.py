@@ -32,7 +32,6 @@ REGLAS_COLOR: dict[str, list[tuple[str, float, float]]] = {
     "sprite_botella": [("verde", 0.08, 1.0), ("oscuro", 0.0, 0.35)],  # oscura = probablemente cola
     "pepsi_lata": [("azul", 0.08, 1.0)],
     "pepsi_botella": [("azul", 0.08, 1.0)],
-    "7up_lata": [("verde", 0.08, 1.0)],
 }
 # Imagen casi sin color (grises o muy desaturada): no se puede juzgar la marca por color -> se descarta.
 MAX_GRIS = 0.97

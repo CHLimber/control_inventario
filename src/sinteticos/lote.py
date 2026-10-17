@@ -4,7 +4,7 @@ Estructura de salida (``<salida>`` = DIR_DATOS/sinteticos/<nombre_lote>):
 
     multiclase/images/*.jpg   multiclase/labels/*.txt   multiclase/data.yaml   multiclase/data_mixto.yaml
     1clase/images/*.jpg       1clase/labels/*.txt       1clase/data.yaml       1clase/data_mixto.yaml
-    conteos.csv   (imagen + 9 clases + total: la verdad EXACTA de cada imagen)
+    conteos.csv   (imagen + 8 clases + total: la verdad EXACTA de cada imagen)
     meta.csv      (modo, vista, luz, fondo... de cada imagen, para analizar errores)
     resumen.json  (parámetros, semilla, tiempo, imágenes/segundo)
 

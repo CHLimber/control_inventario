@@ -1,7 +1,7 @@
 """Arma los datasets YOLO fusionados a partir del índice y del remapeo.
 
   DIR_DATOS/fusion/detector_1clase/   todo lo que no se descarta -> 'producto'
-  DIR_DATOS/fusion/multiclase/        9 clases (ids = orden de config/clases.json)
+  DIR_DATOS/fusion/multiclase/        8 clases (ids = orden de config/clases.json)
 Qué dataset entra a cada uno lo decide 'usar_en' en src/datos/fuentes.py.
 
 Cada uno con images/ labels/ {train,val,test}, data.yaml y _manifiesto.csv. Las imágenes son

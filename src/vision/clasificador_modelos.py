@@ -1,6 +1,6 @@
 """Clasificador de envases (variante A): preprocesamiento común y arquitecturas Keras.
 
-Es la práctica 01 (perros y gatos) generalizada de 2 a 9 clases:
+Es la práctica 01 (perros y gatos) generalizada de 2 a 8 clases:
 
     práctica 01                         acá
     ---------------------------------   -------------------------------------------
@@ -39,7 +39,7 @@ MODELOS = ("cnn", "cnn_ad", "mobilenet")
 #     la práctica 01) lo dejan ilegible, y 160+ multiplica el costo de una red que aprende de cero
 #     sin ganar mucho (el costo de las convoluciones crece con el cuadrado del lado).
 #   - MobileNetV2: 160 px. Es uno de los tamaños con pesos de ImageNet publicados
-#     (96/128/160/192/224); 224 cuesta ~2x en CPU (224²/160² ≈ 1,96) y para 9 clases de logos
+#     (96/128/160/192/224); 224 cuesta ~2x en CPU (224²/160² ≈ 1,96) y para 8 clases de logos
 #     grandes y de colores muy distintos no se espera que lo justifique. Además los pesos de
 #     160 ya estaban en la caché de Keras de esta PC (no hay que descargar nada).
 PARAMETROS: dict[str, dict] = {
@@ -53,10 +53,10 @@ PARAMETROS: dict[str, dict] = {
 #   rotacion 0.028 → ±0.028·360° ≈ ±10°: una foto de estante casi siempre está derecha.
 #   SIN volteo vertical: una botella cabeza abajo no aparece en un estante.
 #   SIN volteo horizontal: invierte el texto y el logo ("Coca-Cola" en espejo no existe en la
-#     realidad) y las marcas se distinguen justamente por su logo/tipografía (Sprite vs 7up son
-#     ambas verdes). Le enseñaría a la red a ignorar la orientación del texto, una pista útil.
+#     realidad) y las marcas se distinguen justamente por su logo/tipografía (Sprite y Fanta,
+#     por ejemplo, difieren en color pero comparten forma de lata). Le enseñaría a la red a ignorar la orientación del texto, una pista útil.
 #   SIN cambio de tono (hue): el color es la pista principal (Coca roja, Fanta naranja,
-#     Sprite/7up verdes, Pepsi azul). Brillo y contraste sí: cambian con la luz del local.
+#     Sprite verde, Pepsi azul). Brillo y contraste sí: cambian con la luz del local.
 AUMENTO = {"rotacion": 0.028, "zoom": 0.15, "traslacion": 0.08, "brillo": 0.2, "contraste": 0.2}
 
 

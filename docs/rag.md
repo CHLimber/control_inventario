@@ -78,7 +78,7 @@ También se pueden combinar (RAG **híbrido**): SQL para los números y búsqued
 python -m pytest tests/test_rag*.py
 ```
 
-- `tests/test_rag_seed.py`: BD SQLite en memoria propia (9 productos de `config/clases.json`, movimientos del 1 al 15/10/2026 y 3 cierres confirmados con faltantes y sobrantes). El stock esperado se calcula ahí en paralelo, para comprobar la implementación.
+- `tests/test_rag_seed.py`: BD SQLite en memoria propia (8 productos de `config/clases.json`, movimientos del 1 al 15/10/2026 y 3 cierres confirmados con faltantes y sobrantes). El stock esperado se calcula ahí en paralelo, para comprobar la implementación.
 - `tests/test_rag_extraccion.py`: fechas, productos, número de cierre e intención.
 - `tests/test_rag_responder.py`: cada consulta contra el seed, `sin_datos`, plantilla sin clave y el cliente de Claude **mockeado** (se verifica que recibe el modelo, el *system prompt* y el contexto JSON). Estos tests vacían `ANTHROPIC_API_KEY`: nunca llaman a la API real.
 - `tests/test_rag_real.py`: una llamada real, solo si hay `ANTHROPIC_API_KEY` **y** `RAG_PRUEBA_REAL=1` (cuesta dinero).

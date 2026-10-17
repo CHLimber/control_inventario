@@ -1,7 +1,7 @@
 """Genera los recortes para el clasificador: DIR_DATOS/recortes/<split>/<clase>/*.jpg.
 
 Parte de las imágenes del multiclase (mismos splits -> sin fugas) y recorta cada caja de las
-9 clases con un margen pequeño. Descarta cajas chicas, borrosas (varianza del Laplaciano) y
+8 clases con un margen pequeño. Descarta cajas chicas, borrosas (varianza del Laplaciano) y
 duplicadas (pHash). Índice: DIR_DATOS/recortes/indice_recortes.csv
 (origen, imagen, imagen_original, split, clase, nitidez, phash, ruta_recorte, motivo_descarte).
 
@@ -20,6 +20,7 @@ from src.datos.color import cargar_rechazos  # noqa: E402
 from src.datos.indice import cargar_indice  # noqa: E402
 from src.datos.recortes import generar  # noqa: E402
 from src.datos.remapeo import cargar_remapeo  # noqa: E402
+from src.datos.fuentes import FUENTES  # noqa: E402
 from src.datos.rutas import (  # noqa: E402
     DIR_FUSION, DIR_RAW, DIR_RECORTES, RUTA_INDICE, RUTA_REMAPEO, alias_para, nombres_por_alias, prioridad_alias,
 )
@@ -51,8 +52,9 @@ def main() -> None:
     df = df[df["alias"].isin(marcas) & (df["n_cajas"] > 0)]
     sel = seleccionar(df, args.copias_train, prioridad_alias())
     print(f"{len(sel)} imágenes candidatas ({sel['split'].value_counts().to_dict()})")
+    topes = {f["alias"]: f["max_recortes_por_clase"] for f in FUENTES if f.get("max_recortes_por_clase")}
     indice = generar(sel, DIR_RAW, DIR_RECORTES, remapeo, nombres, clases, args.margen, args.min_lado,
-                     args.min_nitidez, rechazos_color=rechazos)
+                     args.min_nitidez, rechazos_color=rechazos, topes=topes)
     if indice.empty:
         sys.exit("No se generó ningún recorte")
 

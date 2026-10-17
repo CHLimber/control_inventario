@@ -14,7 +14,7 @@ from src.vision import pipeline_mock
 
 def test_clases_son_9_mas_desconocido():
     clases = nombres_clases()
-    assert len(clases) == 9 and len(set(clases)) == 9
+    assert len(clases) == 8 and len(set(clases)) == 8
     assert clases_con_desconocido()[-1] == "desconocido"
 
 

@@ -1,6 +1,6 @@
 """Control de color por clase de todas las cajas con marca (detecta etiquetas equivocadas).
 
-Para cada caja de las 9 clases en los datasets que van al multiclase o a los recortes, mide en la
+Para cada caja de las 8 clases en los datasets que van al multiclase o a los recortes, mide en la
 zona central de la caja la fracción de rojo/naranja/verde/azul/oscuro/gris (src/datos/color.py) y
 aplica las reglas por clase. Salida: DIR_DATOS/fusion/_control_color.csv (alias, ruta, caja, clase,
 medidas, motivo). datos_fusionar.py y datos_recortes.py la usan para descartar las cajas con color

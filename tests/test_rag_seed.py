@@ -1,13 +1,13 @@
 """Seed propio del agente RAG (BD SQLite en memoria). No depende de src/db.
 
 Escenario (HOY = jueves 15/10/2026):
-- 01/10 08:00  stock_inicial de 20 unidades de cada uno de los 9 productos.
+- 01/10 08:00  stock_inicial de 20 unidades de cada uno de los 8 productos.
 - 05/10 10:00  entrada de 12 Coca-Cola lata.
 - todos los días 01..15/10 a las 15:00  venta de 1 unidad de cada producto.
 - cierre 1 (08/10 21:00, confirmado): Coca-Cola lata −2, Fanta lata +1.
 - cierre 2 (12/10 21:00, confirmado): Pepsi botella −2 (detectó 7, el cajero corrigió a 6),
   Sprite lata +1.
-- cierre 3 (15/10 21:00, confirmado): Coca-Cola lata −1, 7Up lata −3, Fanta botella +2;
+- cierre 3 (15/10 21:00, confirmado): Coca-Cola lata −1, Pepsi lata −3, Fanta botella +2;
   2 cajas no reconocidas y una observación.
 El stock esperado se lleva acá en un dict, independiente de la implementación de src/rag.
 """
@@ -28,7 +28,7 @@ HOY = date(2026, 10, 15)
 CIERRES = {
     1: (datetime(2026, 10, 8, 21), {"coca_lata": (-2, None), "fanta_lata": (1, None)}, None),
     2: (datetime(2026, 10, 12, 21), {"pepsi_botella": (-1, -2), "sprite_lata": (1, None)}, None),
-    3: (datetime(2026, 10, 15, 21), {"coca_lata": (-1, None), "7up_lata": (-3, None),
+    3: (datetime(2026, 10, 15, 21), {"coca_lata": (-1, None), "pepsi_lata": (-3, None),
                                      "fanta_botella": (2, None)}, "Luz baja en el estante"),
 }
 
@@ -113,6 +113,6 @@ def crear_sesion_seed(con_datos: bool = True) -> tuple[Session, dict]:
 def test_seed_es_coherente():
     s, info = crear_sesion_seed()
     assert info["stock_final"]["coca_lata"] == 20 + 12 - 15 - 2 - 1
-    assert info["stock_final"]["7up_lata"] == 20 - 15 - 3
+    assert info["stock_final"]["pepsi_lata"] == 20 - 15 - 3
     assert info["esperado"][2]["pepsi_botella"] == 20 - 12
     s.close()

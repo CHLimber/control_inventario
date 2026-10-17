@@ -21,7 +21,7 @@ from src.datos.split import asignar_grupos, asignar_splits, seleccionar, verific
 from src.datos.util import id_original, leer_etiquetas_yolo
 
 CLASES = ["coca_botella", "coca_lata", "fanta_botella", "fanta_lata", "sprite_botella", "sprite_lata",
-          "pepsi_botella", "pepsi_lata", "7up_lata"]
+          "pepsi_botella", "pepsi_lata"]
 NOMBRES_A = ["coke_can", "Cans", "beer_can", "person"]
 NOMBRES_B = ["fanta bottle", "sprite_can"]
 REMAPEO = {
@@ -102,7 +102,7 @@ def test_sugerir_remapeo():
     assert sugerir("Coca_Original_Bottle", CLASES) == "coca_botella"
     assert sugerir("Sprite20Oz", CLASES) == "sprite_botella"
     assert sugerir("Fanta-Can16oz", CLASES) == "fanta_lata"
-    assert sugerir("7up_can", CLASES) == "7up_lata"
+    assert sugerir("7up_can", CLASES) == SOLO_DETECTOR     # 7up no es una de nuestras clases
     assert sugerir("pepsi_bottle", CLASES) == "pepsi_botella"
     assert sugerir("coca-cola", CLASES, "botella") == "coca_botella"
     assert sugerir("coca-cola", CLASES) == SOLO_DETECTOR          # sin formato
@@ -271,3 +271,113 @@ def test_recortes_filtros_y_sin_fugas(mini):
     r = ok.iloc[0]
     with Image.open(salida / r.ruta_recorte) as im:
         assert im.width >= r.ancho and im.width <= r.ancho * 1.2 + 2
+
+
+# ------------------------------------------------------------------ destino auto:<marca> (formato por la forma de la caja)
+def test_resolver_auto_por_forma_de_caja():
+    from src.datos.remapeo import es_auto, resolver_auto
+    assert es_auto("auto:pepsi") and not es_auto("pepsi_lata")
+    assert resolver_auto("auto:pepsi", 40, 74, CLASES) == "pepsi_lata"          # 1,85
+    assert resolver_auto("auto:pepsi", 40, 130, CLASES) == "pepsi_botella"      # 3,25
+    assert resolver_auto("auto:pepsi", 40, 100, CLASES) == SOLO_DETECTOR        # 2,5: forma dudosa
+    assert resolver_auto("auto:pepsi", 40, 40, CLASES) == SOLO_DETECTOR         # cuadrada
+    assert resolver_auto("auto:pepsi", 40, 300, CLASES) == SOLO_DETECTOR        # demasiado alta
+    assert resolver_auto("auto:7up", 40, 74, CLASES) == SOLO_DETECTOR           # marca sin clase
+
+
+def test_validar_remapeo_acepta_auto_solo_con_marca_existente():
+    assert validar_remapeo({"x": {"a": "auto:coca", "b": "auto:pepsi"}}, CLASES) == []
+    assert validar_remapeo({"x": {"a": "auto:marca_inexistente"}}, CLASES)
+
+
+def _dataset_auto(tmp_path):
+    img, lab = tmp_path / "train" / "images", tmp_path / "train" / "labels"
+    img.mkdir(parents=True)
+    lab.mkdir(parents=True)
+    Image.new("RGB", (400, 400), "white").save(img / "f.rf.abc.jpg")
+    (lab / "f.rf.abc.txt").write_text("\n".join([
+        "0 0.2 0.5 0.1 0.35",     # 40x140 px -> botella
+        "0 0.5 0.5 0.12 0.22",    # 48x88 px  -> lata
+        "0 0.8 0.5 0.10 0.25",    # 40x100 px -> forma dudosa
+        "1 0.9 0.2 0.1 0.35",     # clase descartada
+    ]))
+    return lab / "f.rf.abc.txt"
+
+
+def test_cajas_remapeadas_con_auto(tmp_path):
+    from src.datos.fusion import cajas_remapeadas
+    txt = _dataset_auto(tmp_path)
+    remapeo = {"ds": {"Pepsi": "auto:pepsi", "Otra": DESCARTAR}}
+    mc = cajas_remapeadas(txt, ["Pepsi", "Otra"], remapeo, "ds", "multiclase", CLASES)
+    assert [c[0] for c in mc] == [CLASES.index("pepsi_botella"), CLASES.index("pepsi_lata")]   # la dudosa no entra
+    uc = cajas_remapeadas(txt, ["Pepsi", "Otra"], remapeo, "ds", "detector_1clase", CLASES)
+    assert len(uc) == 3 and all(c[0] == 0 for c in uc)                                          # al detector entran las 3
+
+
+def test_recortes_con_tope_por_origen(tmp_path):
+    """Con tope, de cada imagen salen a lo sumo `tope_por_imagen` recortes por clase."""
+    import pandas as pd
+    from src.datos.recortes import generar
+    raw = tmp_path / "raw"
+    img, lab = raw / "ds" / "train" / "images", raw / "ds" / "train" / "labels"
+    img.mkdir(parents=True)
+    lab.mkdir(parents=True)
+    rng = np.random.default_rng(0)
+    Image.fromarray(rng.integers(0, 255, (400, 400, 3), dtype=np.uint8)).save(img / "g.jpg")
+    cajas = [f"0 {0.1 + 0.1 * k:.2f} 0.5 0.08 0.30" for k in range(8)]          # 8 botellas de pepsi (32x120 px)
+    (lab / "g.txt").write_text("\n".join(cajas))
+    sel = pd.DataFrame([{"alias": "ds", "ruta": "ds/train/images/g.jpg", "grupo": "g", "split": "train"}])
+    kw = dict(remapeo={"ds": {"Pepsi": "auto:pepsi"}}, nombres_por_alias={"ds": ["Pepsi"]}, clases=CLASES,
+              min_lado=8, min_nitidez=0.0)
+    sin = generar(sel, raw, tmp_path / "s", **kw)
+    con = generar(sel, raw, tmp_path / "c", topes={"ds": 100}, tope_por_imagen=2, **kw)
+    assert (sin["motivo_descarte"] == "").sum() == 8
+    assert (con["motivo_descarte"] == "").sum() == 2 and (con["motivo_descarte"] == "tope_por_origen").sum() == 6
+
+
+def test_fuente_de_biblioteca_solo_train_con_clases_resueltas(tmp_path):
+    """El árbol auxiliar lleva solo train; las cajas auto: reciben clase y las demás el id ID_OTRO."""
+    from src.datos.biblioteca import ID_OTRO, construir_fuente_biblioteca
+    raw = tmp_path / "raw"
+    for split in ("train", "valid"):
+        (raw / "ds" / split / "images").mkdir(parents=True)
+        (raw / "ds" / split / "labels").mkdir(parents=True)
+        Image.new("RGB", (400, 400), "white").save(raw / "ds" / split / "images" / f"{split}.jpg")
+        (raw / "ds" / split / "labels" / f"{split}.txt").write_text(
+            "0 0.2 0.5 0.1 0.35\n0 0.8 0.5 0.12 0.22\n1 0.5 0.5 0.1 0.3\n")
+    df = pd.DataFrame([{"alias": "ds", "ruta": f"ds/{s}/images/{s}.jpg", "split": "train" if s == "train" else "val",
+                        "n_cajas": 3} for s in ("train", "valid")])
+    salida = tmp_path / "bib"
+    conteo = construir_fuente_biblioteca(df, raw, salida, {"ds": {"Pepsi": "auto:pepsi", "Mountain Dew": "solo_detector"}},
+                                         {"ds": ["Pepsi", "Mountain Dew"]}, CLASES, {"ds"})
+    assert [p.name for p in (salida / "images" / "train").glob("*")] == ["ds__train.jpg"]
+    assert not (salida / "images" / "val").exists()
+    assert conteo["pepsi_botella"] == 1 and conteo["pepsi_lata"] == 1
+    filas = [l.split() for l in (salida / "labels" / "train" / "ds__train.txt").read_text().splitlines()]
+    assert sorted(int(f[0]) for f in filas) == sorted([CLASES.index("pepsi_botella"), CLASES.index("pepsi_lata"), ID_OTRO])
+
+
+# ------------------------------------------------------------------ Open Food Facts: qué productos se aceptan
+def test_off_acepta_solo_envases_individuales_clasicos():
+    from scripts.datos_off import clasificar
+
+    def p(nombre, marcas, cant="", emb=""):
+        return {"product_name": nombre, "brands": marcas, "quantity": cant, "packaging": emb}
+
+    assert clasificar(p("Fanta Naranja lata 330 ml", "Fanta, Coca-Cola", "330 ml"), "fanta") == ("fanta_lata", "lata")
+    assert clasificar(p("Coca-Cola 2 L PET", "Coca-Cola", "2 l"), "coca-cola") == ("coca_botella", "botella")
+    assert clasificar(p("Fanta Naranja 9 latas 330 ml", "Fanta"), "fanta") is None          # pack
+    assert clasificar(p("Sprite Zero lata", "Sprite"), "sprite") is None                    # variante
+    assert clasificar(p("Pepsi Max botella", "Pepsi"), "pepsi") is None                     # variante
+    assert clasificar(p("Pepsi", "Pepsi", "330 ml"), "pepsi") is None                       # formato dudoso
+    assert clasificar(p("Fanta lata botella", "Fanta"), "fanta") is None                    # ambos formatos
+    assert clasificar(p("Sprite lata", "Otra marca"), "sprite") is None                     # la marca no coincide
+
+
+def test_auto_con_un_solo_formato():
+    from src.datos.remapeo import resolver_auto
+    assert resolver_auto("auto:pepsi:botella", 40, 130, CLASES) == "pepsi_botella"
+    assert resolver_auto("auto:pepsi:botella", 40, 74, CLASES) == SOLO_DETECTOR       # forma de lata: no se acepta
+    assert resolver_auto("auto:pepsi:lata", 40, 74, CLASES) == "pepsi_lata"
+    assert validar_remapeo({"x": {"a": "auto:coca:botella", "b": "auto:fanta:lata"}}, CLASES) == []
+    assert validar_remapeo({"x": {"a": "auto:coca:envase"}}, CLASES)

@@ -2,7 +2,7 @@
 
 Variantes:
   1clase      -> datos/fusion/detector_1clase  (una clase "producto"; variante A del sistema)
-  multiclase  -> datos/fusion/multiclase       (9 clases de config/clases.json; variante B)
+  multiclase  -> datos/fusion/multiclase       (8 clases de config/clases.json; variante B)
 
 Qué hace:
   1. Arma un data.yaml PROPIO en runs/detector/tmp/<nombre>/ (no toca datos/): rutas absolutas

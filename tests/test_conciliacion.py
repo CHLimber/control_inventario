@@ -101,14 +101,14 @@ def test_sin_movimientos_stock_cero():
 def test_stock_a_fecha_con_el_seed(sesion):
     stock = {p.clase_modelo: r.stock for p, r in stock_a_fecha(sesion, datetime(2026, 10, 14, 23))}
     assert stock == stock_final_esperado()
-    assert stock["7up_lata"] == 0
+    assert stock["pepsi_botella"] == 0
 
 
 def test_stock_a_fecha_excluye_inactivos(sesion):
-    _producto(sesion, "7up_lata").activo = False
+    _producto(sesion, "pepsi_botella").activo = False
     sesion.flush()
     clases = {p.clase_modelo for p, _ in stock_a_fecha(sesion, datetime(2026, 10, 14, 23))}
-    assert "7up_lata" not in clases and len(clases) == 8
+    assert "pepsi_botella" not in clases and len(clases) == 7
 
 
 # ---------------------------------------------------------------- reglas de conciliación
@@ -134,19 +134,19 @@ def _crear_cierre(sesion, conteo: dict[str, int], cajas=None):
 
 
 def test_conciliacion_faltante_sobrante_y_cero(sesion):
-    esperado = stock_final_esperado()        # coca_lata 8, fanta_lata 4, 7up_lata 0
+    esperado = stock_final_esperado()        # coca_lata 8, fanta_lata 4, pepsi_botella 0
     conteo = dict(esperado) | {"coca_lata": 6, "fanta_lata": 5}
     cajas = [Caja(0, 0, 10, 10, 0.9, "coca_lata", 0.8), Caja(0, 0, 10, 10, 0.9, "coca_lata", 0.6),
              Caja(0, 0, 10, 10, 0.7, "desconocido", 0.3)]
     cierre = _crear_cierre(sesion, conteo, cajas)
 
     filas = {d.producto.clase_modelo: d for d in cierre.detalles}
-    assert len(filas) == 9
+    assert len(filas) == 8
     assert (filas["coca_lata"].esperado, filas["coca_lata"].detectado,
             filas["coca_lata"].diferencia) == (8, 6, -2)
     assert estado_fila(filas["coca_lata"].diferencia) == "faltante"
     assert filas["fanta_lata"].diferencia == 1 and estado_fila(1) == "sobrante"
-    assert (filas["7up_lata"].esperado, filas["7up_lata"].diferencia) == (0, 0)
+    assert (filas["pepsi_botella"].esperado, filas["pepsi_botella"].diferencia) == (0, 0)
     assert filas["coca_lata"].confianza_media == pytest.approx(0.7)
     assert filas["sprite_lata"].confianza_media is None
     assert len(cierre.detecciones) == 3

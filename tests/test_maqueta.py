@@ -38,7 +38,7 @@ def test_problemas_conteo():
     assert m.problemas_conteo({c: 1 for c in CLASES}) == []
     assert any("negativo" in e for e in m.problemas_conteo({"coca_lata": -1}))
     assert any("supera" in e for e in m.problemas_conteo({"coca_lata": 6}))
-    assert any("nivel 3" in e for e in m.problemas_conteo({c: 2 for c in LATAS}))   # 10 > 9
+    assert any("nivel 3" in e for e in m.problemas_conteo({c: 3 for c in LATAS}))   # 12 > 9
 
 
 def test_columnas_escenas_conservan_las_originales():
@@ -80,9 +80,9 @@ def test_plan_reproducible_y_distinto_por_sesion():
 
 
 def test_plan_respeta_envases_limitados():
-    m = Maqueta(envases={c: 2 for c in CLASES} | {"7up_lata": 0}, grandes={c: 1 for c in BOTELLAS})
+    m = Maqueta(envases={c: 2 for c in CLASES} | {"pepsi_lata": 0}, grandes={c: 1 for c in BOTELLAS})
     for f in plan.generar_sesion(m, 1, 25, semilla=1):
-        assert f["7up_lata"] == 0
+        assert f["pepsi_lata"] == 0
         assert all(f[c] <= 2 for c in CLASES)
 
 

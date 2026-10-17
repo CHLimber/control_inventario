@@ -24,14 +24,13 @@
       { id: 5, clase: 'sprite_lata', nombre: 'Sprite lata', marca: 'Sprite', formato: 'lata' },
       { id: 6, clase: 'pepsi_botella', nombre: 'Pepsi botella', marca: 'Pepsi', formato: 'botella' },
       { id: 7, clase: 'pepsi_lata', nombre: 'Pepsi lata', marca: 'Pepsi', formato: 'lata' },
-      { id: 8, clase: '7up_lata', nombre: '7Up lata', marca: '7Up', formato: 'lata' },
     ],
     desconocido: { clase: 'desconocido', nombre: 'No reconocido' },
     detector_1clase: { id: 0, clase: 'producto', nombre: 'Producto' },
   };
 
   const COLOR_MARCA = {
-    'Coca-Cola': '#d7191c', Fanta: '#f28e1c', Sprite: '#1a9850', Pepsi: '#2c5fb8', '7Up': '#66bd63',
+    'Coca-Cola': '#d7191c', Fanta: '#f28e1c', Sprite: '#1a9850', Pepsi: '#2c5fb8',
   };
   const CLAVE_ESTADO = 'inventario_simulado_v1';
   const PREFIJO_IMG = 'inventario_simulado_img_';

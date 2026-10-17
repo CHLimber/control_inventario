@@ -25,8 +25,8 @@ evaluación sea honesta. Antes de esto, la maqueta tiene que estar armada ([GUIA
 ### `escenas.csv` (verdad de terreno)
 
 ```
-sesion,escena,fecha,luz,fondo,coca_botella,coca_lata,fanta_botella,fanta_lata,sprite_botella,sprite_lata,pepsi_botella,pepsi_lata,7up_lata,observacion,distancia,celular
-1,1,2026-10-18,natural,blanco,3,3,3,1,4,1,5,2,2,lleno; girada 1 coca_botella,completo,Xiaomi Redmi Note 12
+sesion,escena,fecha,luz,fondo,coca_botella,coca_lata,fanta_botella,fanta_lata,sprite_botella,sprite_lata,pepsi_botella,pepsi_lata,observacion,distancia,celular
+1,1,2026-10-18,natural,blanco,3,3,3,1,4,1,5,2,lleno; girada 1 coca_botella,completo,Xiaomi Redmi Note 12
 ```
 
 | Columna | Valores |

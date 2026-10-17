@@ -5,8 +5,12 @@ Fine-tuning de `yolo26n.pt` (COCO) para detectar bebidas. Hay dos variantes con 
 | Variante | Dataset | Clases | Rol en el sistema | Pesos que se cargan |
 |---|---|---|---|---|
 | **A** `1clase` | `datos/fusion/detector_1clase` | `producto` | detector del sistema; la marca la pone la CNN Keras sobre el recorte | `modelos/detector/detector_1clase.pt` |
-| **B** `multiclase` | `datos/fusion/multiclase` | las 9 de `config/clases.json` | línea base (detecta y clasifica en una sola pasada) | `modelos/detector/detector_multiclase.pt` |
+| **B** `multiclase` | `datos/fusion/multiclase` | las 8 de `config/clases.json` | línea base (detecta y clasifica en una sola pasada) | `modelos/detector/detector_multiclase.pt` |
 
+> **Datos (2026-10-17):** se quitó la clase `7up_lata` (el multiclase tiene 8 clases) y se sumaron fotos reales de
+> góndola (`cold_drinks_2`, `hccb_overall`): el detector de 1 clase pasó de 22 756 a ~24 150 imágenes de train. Los
+> tiempos y recuentos de abajo son de antes de ese cambio.
+>
 > **Estado:** el código, las pruebas de 1 época y el notebook de Colab están listos. **Todavía no hay un
 > entrenamiento completo**, así que no hay mAP ni error de conteo del detector entrenado. Los únicos números
 > de este documento son tiempos medidos y la línea base COCO, que se volvió a medir con el código nuevo.

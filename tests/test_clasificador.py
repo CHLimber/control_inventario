@@ -69,13 +69,12 @@ def test_pesos_clase_compensan_desbalance():
 
 def test_confusiones_clave_y_umbral_sugerido():
     clases = nombres_clases()
-    m = np.zeros((9, 9), dtype=int)
+    m = np.zeros((len(clases), len(clases)), dtype=int)
     i = {c: k for k, c in enumerate(clases)}
     m[i["coca_botella"], i["coca_lata"]] = 3
-    m[i["sprite_lata"], i["7up_lata"]] = 2
     m[i["coca_botella"], i["coca_botella"]] = 7
     c = ent.confusiones_clave(m, clases)
-    assert c["total_botella_lata"] == 3 and c["total_sprite_7up"] == 2
+    assert c["total_botella_lata"] == 3
     barrido = [{"umbral": t, "cobertura": 1 - t / 2, "accuracy_aceptadas": 0.8 + t / 5} for t in ent.UMBRALES]
     assert ent.sugerir_umbral(barrido) == 0.75        # primer umbral ≥ 0.5 con accuracy ≥ 0.95
 
@@ -93,9 +92,9 @@ def test_mobilenet_finetune_no_descongela_batchnorm():
 
     from src.vision import clasificador_modelos as cm
 
-    modelo = cm.construir_mobilenet(9, tamano=96, pesos=None)
+    modelo = cm.construir_mobilenet(8, tamano=96, pesos=None)
     base = modelo.get_layer(cm.NOMBRE_BASE)
-    assert not base.trainable and modelo.output_shape == (None, 9)
+    assert not base.trainable and modelo.output_shape == (None, 8)
     cm.habilitar_finetune(modelo, 20, 1e-5)
     entrenables = [c for c in base.layers if c.trainable]
     assert entrenables and all(not isinstance(c, layers.BatchNormalization) for c in entrenables)
@@ -136,7 +135,7 @@ def test_clasificar_forma_de_la_salida(modelo_mini):
     assert clf.clasificar([]) == []
     assert clf.tamano == 64
     probs = clf.probabilidades(recortes)
-    assert probs.shape == (3, 9) and np.allclose(probs.sum(axis=1), 1, atol=1e-4)
+    assert probs.shape == (3, 8) and np.allclose(probs.sum(axis=1), 1, atol=1e-4)
 
 
 def test_umbral_manda_a_desconocido(modelo_mini):
@@ -160,7 +159,7 @@ def test_orden_de_clases_distinto_da_error(modelo_mini, tmp_path):
     with pytest.raises(ErrorClasesModelo, match="Falta"):
         Clasificador(otra / "clasificador.keras").clasificar([np.zeros((10, 10, 3), np.uint8)])
     with pytest.raises(ErrorClasesModelo, match="salidas"):
-        verificar_clases(clases, 8)
+        verificar_clases(clases, 9)
 
 
 def test_modelo_inexistente_da_error_claro(tmp_path):

@@ -136,7 +136,7 @@ def agregar_args_maqueta(parser) -> None:
     g = parser.add_argument_group("maqueta física")
     g.add_argument("--ancho", type=float, default=70.0, help="ancho interior de cada nivel en cm (def. 70)")
     g.add_argument("--envases", default=None,
-                   help="envases por clase: '5' para todas o 'coca_lata=4,7up_lata=6' (def. 5 c/u)")
+                   help="envases por clase: '5' para todas o 'coca_lata=4,pepsi_lata=6' (def. 5 c/u)")
     g.add_argument("--grandes", default=None,
                    help="de las botellas de cada marca, cuántas son grandes (2 L): '2' o "
                         "'coca_botella=3' (def. 2 c/u; el resto son chicas)")

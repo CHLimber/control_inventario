@@ -23,7 +23,7 @@ En VS Code, el kernel de los notebooks es `inventariovision`.
 
 | Archivo | Qué fija |
 |---|---|
-| `config/clases.json` | las 9 clases + `desconocido`; el orden es el índice de salida de los modelos |
+| `config/clases.json` | las 8 clases + `desconocido`; el orden es el índice de salida de los modelos |
 | `contratos/modelos_bd.py` + `docs/esquema_bd.md` | tablas, stock esperado y conciliación |
 | `contratos/vision_types.py` | `Caja`, `ResultadoConteo`, `contar(imagenes) -> ResultadoConteo`, mediana por clase |
 | `contratos/api_schemas.py` | endpoints y modelos Pydantic de la API |

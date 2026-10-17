@@ -1,4 +1,4 @@
-"""Datos de ejemplo: los 9 productos de config/clases.json y un día ficticio de movimientos.
+"""Datos de ejemplo: los 8 productos de config/clases.json y un día ficticio de movimientos.
 
 Uso desde código:  sembrar(sesion, dia=date(2026, 10, 14))
 Uso por consola:   python scripts/seed.py [--fecha 2026-10-14] [--reiniciar]
@@ -24,7 +24,6 @@ PRECIOS_BS: dict[str, Decimal] = {
     "sprite_lata": Decimal("5.50"),
     "pepsi_botella": Decimal("12.00"),
     "pepsi_lata": Decimal("5.00"),
-    "7up_lata": Decimal("5.00"),
 }
 
 # Día ficticio por producto: (stock_inicial 07:00, entrada 10:00, ventas a lo largo del día).
@@ -35,9 +34,8 @@ MOVIMIENTOS_DIA: dict[str, tuple[int, int, list[int]]] = {
     "fanta_lata": (6, 0, [2]),             # 4
     "sprite_botella": (4, 2, [1]),         # 5
     "sprite_lata": (5, 0, [1, 1]),         # 3
-    "pepsi_botella": (3, 0, [1]),          # 2
+    "pepsi_botella": (2, 0, [2]),          # 0: termina el día en cero
     "pepsi_lata": (5, 4, [2, 2]),          # 5
-    "7up_lata": (2, 0, [2]),               # 0: termina el día en cero
 }
 _HORA_STOCK_INICIAL = time(7, 0)
 _HORA_ENTRADA = time(10, 0)

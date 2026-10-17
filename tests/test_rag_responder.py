@@ -77,7 +77,7 @@ def test_consulta_faltantes_hoy(seed):
     assert res["unidades_faltantes"] == 4 and res["unidades_sobrantes"] == 2
     assert [c["id_cierre"] for c in res["cierres_revisados"]] == [3]
     assert {r["producto"]: r["diferencia"] for r in ctx["registros"]} == {
-        "Coca-Cola lata": -1, "7Up lata": -3, "Fanta botella": 2}
+        "Coca-Cola lata": -1, "Pepsi lata": -3, "Fanta botella": 2}
 
 
 def test_consulta_cierre_detalle(seed):
@@ -87,7 +87,7 @@ def test_consulta_cierre_detalle(seed):
     assert res["productos_con_diferencia"] == 2 and res["diferencia_total"] == -1
     pepsi = next(r for r in ctx["registros"] if r["producto"] == "Pepsi botella")
     assert (pepsi["esperado"], pepsi["detectado"], pepsi["ajustado"], pepsi["diferencia"]) == (8, 7, 6, -2)
-    assert len(ctx["registros"]) == 9
+    assert len(ctx["registros"]) == 8
 
 
 # ------------------------------------------------------------------ responder (plantilla)
@@ -97,7 +97,7 @@ def test_que_falto_hoy_con_plantilla(seed):
     assert isinstance(r, RespuestaAsistente)
     assert r.intencion == "faltantes_rango" and not r.sin_datos and r.modelo is None
     assert r.parametros["fechas"]["desde"] == "2026-10-15"
-    assert "7Up lata" in r.respuesta and "faltaron 3 unidades" in r.respuesta
+    assert "Pepsi lata" in r.respuesta and "faltaron 3 unidades" in r.respuesta
     assert "4 unidades faltantes y 2 unidades sobrantes" in r.respuesta
     assert len(r.datos) == 3
     json.dumps(r.model_dump(mode="json"))     # serializable para la API
@@ -131,14 +131,14 @@ def test_stock_en_fecha_pasada_y_todas_las_latas(seed):
     s, _ = seed
     r = responder("¿cuántas latas había el 4 de octubre?", s, hoy=HOY)
     assert r.parametros["fecha_stock"] == "2026-10-04"
-    assert len(r.datos) == 5 and all(d["stock"] == 16 for d in r.datos)
+    assert len(r.datos) == 4 and all(d["stock"] == 16 for d in r.datos)
 
 
 def test_detalle_cierre_3(seed):
     s, _ = seed
     r = responder("¿Qué pasó en el cierre 3?", s, hoy=HOY)
     assert r.intencion == "detalle_cierre" and r.parametros["id_cierre"] == 3
-    assert "Cierre #3" in r.respuesta and "7Up lata -3 (faltante)" in r.respuesta
+    assert "Cierre #3" in r.respuesta and "Pepsi lata -3 (faltante)" in r.respuesta
     assert "2 objetos no reconocidos" in r.respuesta and "Luz baja" in r.respuesta
 
 
@@ -215,7 +215,7 @@ def test_si_la_api_falla_usa_plantilla(seed):
     cliente = MagicMock()
     cliente.messages.create.side_effect = RuntimeError("sin red")
     r = responder("¿Qué faltó hoy?", s, cliente=cliente, hoy=HOY)
-    assert r.modelo is None and not r.sin_datos and "7Up lata" in r.respuesta
+    assert r.modelo is None and not r.sin_datos and "Pepsi lata" in r.respuesta
 
 
 def test_rechazo_o_texto_vacio_usa_plantilla(seed):

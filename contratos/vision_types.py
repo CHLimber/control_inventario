@@ -42,7 +42,7 @@ class Caja:
 class ResultadoConteo:
     """Salida de contar().
 
-    conteo: SIEMPRE trae las 9 clases + "desconocido" (0 si no aparecen).
+    conteo: SIEMPRE trae las 8 clases + "desconocido" (0 si no aparecen).
             Con varias imágenes es la mediana por clase (ver combinar_conteos).
     cajas: todas las cajas de todas las imágenes (con su indice_imagen).
     imagen_anotada_path: imagen con las cajas dibujadas. Se guarda junto a la

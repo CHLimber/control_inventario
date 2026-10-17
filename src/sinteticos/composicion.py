@@ -1,4 +1,4 @@
-"""Compone UNA imagen sintética de estante (3 niveles, una sola fila) con sus cajas exactas.
+"""Compone UNA imagen sintética de estante (3 a 5 niveles, una sola fila) con sus cajas exactas.
 
 Geometría (en cm, como la maqueta de maqueta/GUIA.md; se convierte a píxeles con ``s`` px/cm):
 
@@ -9,6 +9,12 @@ Geometría (en cm, como la maqueta de maqueta/GUIA.md; se convierte a píxeles c
     tabla + tira portaprecios
     nivel 1  botellas grandes      ~35 cm
     tabla base + tira portaprecios
+
+Con 4 o 5 niveles se repiten los del medio. De abajo hacia arriba: botellas grandes, botellas chicas
+(a veces grandes) y latas; el nivel de arriba siempre lleva latas y las latas nunca quedan debajo de
+una botella. Cada estante sale en uno de tres modos: ``ordenado`` (bloques contiguos por clase, sin
+solapes), ``normal`` (los de la primera versión) o ``desordenado`` (envases inclinados, algunos
+acostados, huecos irregulares y solapes).
 
 Orden de dibujo: pared -> fondo del estante -> sombreado interior -> piso de cada nivel -> sombras
 -> envases (en orden z) -> tablas y tiras portaprecios -> laterales -> perspectiva -> luz/ruido/blur.
@@ -50,7 +56,13 @@ class Parametros:
     p_acercamiento: float = 0.2      # foto de un solo nivel (como 'distancia=nivel_k' del protocolo)
     p_estante_vacio: float = 0.04    # imagen sin ningún envase (todo en cero)
     p_nivel_vacio: float = 0.12      # cada nivel por separado puede quedar vacío
-    p_latas_medio: float = 0.35      # el nivel del medio lleva latas en vez de botellas chicas
+    p_latas_medio: float = 0.35      # cada nivel del medio, desde arriba, lleva latas en vez de botellas
+    n_niveles: int = 0               # 3, 4 o 5; 0 = sortear según p_niveles
+    p_niveles: tuple[float, float, float] = (0.25, 0.40, 0.35)   # prob. de 3, 4 y 5 niveles
+    p_ordenado: float = 0.25         # estante ordenado: bloques por clase, sin solapes
+    p_desordenado: float = 0.25      # estante desordenado: inclinados, algunos acostados, huecos y solapes
+    max_rotacion_desorden: float = 22.0   # grados, solo en estantes desordenados
+    p_caido: float = 0.12            # en desordenado: prob. de que un envase esté acostado
     llenado_botellas: tuple[float, float] = (2.4, 1.4)   # Beta(a, b) de la fracción de capacidad
     llenado_latas: tuple[float, float] = (2.5, 1.0)
     p_agrupado: float = 0.6          # productos iguales juntos (facings) vs mezclados
@@ -145,8 +157,10 @@ def suavizar_borde(alfa: np.ndarray, sigma: float) -> np.ndarray:
     return cv2.GaussianBlur(a, (k, k), sigma)
 
 
-def preparar_objeto(rgba: np.ndarray, tipo: str, s: float, rng: np.random.Generator, p: Parametros) -> np.ndarray:
-    """Escala al tamaño real del envase en este nivel, rota levemente, ajusta color y suaviza el borde."""
+def preparar_objeto(rgba: np.ndarray, tipo: str, s: float, rng: np.random.Generator, p: Parametros,
+                    rot_max: float | None = None, caido: bool = False) -> np.ndarray:
+    """Escala al tamaño real del envase en este nivel, rota (levemente, o acostado si ``caido``),
+    ajusta color y suaviza el borde."""
     hmin, hmax, dmin, dmax = MEDIDAS[tipo]
     alto_cm, diam_cm = _u(rng, hmin, hmax), _u(rng, dmin, dmax)
     asp_real = alto_cm / diam_cm
@@ -157,17 +171,27 @@ def preparar_objeto(rgba: np.ndarray, tipo: str, s: float, rng: np.random.Genera
     interp = cv2.INTER_AREA if alto < rgba.shape[0] else cv2.INTER_LINEAR
     o = cv2.resize(rgba, (ancho, alto), interpolation=interp)
     o = ajustar_color(o, rng)
-    o = rotar(o, _u(rng, -p.max_rotacion, p.max_rotacion))
+    grados = _u(rng, -(p.max_rotacion if rot_max is None else rot_max), p.max_rotacion if rot_max is None else rot_max)
+    if caido:   # acostado: casi 90 grados hacia un lado
+        grados += float(rng.choice([-1.0, 1.0])) * _u(rng, 70, 100)
+    o = rotar(o, grados)
     o[..., 3] = suavizar_borde(o[..., 3], _u(rng, 0.6, 1.2))
     return o
 
 
-def _clases_nivel(rng: np.random.Generator, disponibles: list[str], n: int, p: Parametros) -> list[str]:
+def _clases_nivel(rng: np.random.Generator, disponibles: list[str], n: int, p: Parametros,
+                  ordenado: bool = False, p_agrupado: float | None = None) -> list[str]:
     if not disponibles or n <= 0:
         return []
     pesos = np.array([p.pesos_clase.get(c, 1.0) for c in disponibles], float)
     pesos /= pesos.sum()
-    if rng.random() < p.p_agrupado:
+    if ordenado:   # bloques contiguos de la misma clase, en el orden de ``disponibles``
+        salida = []
+        while len(salida) < n:
+            c = disponibles[rng.choice(len(disponibles), p=pesos)]
+            salida += [c] * int(rng.integers(2, 7))
+        return sorted(salida[:n], key=disponibles.index)
+    if rng.random() < (p.p_agrupado if p_agrupado is None else p_agrupado):
         salida: list[str] = []
         while len(salida) < n:
             c = disponibles[rng.choice(len(disponibles), p=pesos)]
@@ -241,9 +265,32 @@ def componer(rng: np.random.Generator, biblioteca: dict[str, list], clases: list
 
     # --- geometría en cm
     ancho_cm = _u(rng, 60, 80)
-    alto_niv = {1: 35 + _u(rng, -2, 2), 2: 25 + _u(rng, -1.5, 1.5), 3: 15 + _u(rng, -0.5, 1.5)}
+    # niveles: 1 = el de abajo ... N = el de arriba (siempre latas). Desde arriba, cada nivel del medio
+    # lleva latas con prob. p_latas_medio hasta el primero que no; debajo hay botellas (chicas, a veces grandes).
+    N = p.n_niveles if p.n_niveles in (3, 4, 5) else int(rng.choice([3, 4, 5], p=np.array(p.p_niveles) / sum(p.p_niveles)))
+    NIV = tuple(range(N, 0, -1))
+    plan = {1: ("botella", "botella_grande"), N: ("lata", "lata")}
+    cortado = False
+    for k in range(N - 1, 1, -1):
+        if not cortado and rng.random() < p.p_latas_medio:
+            plan[k] = ("lata", "lata")
+        else:
+            cortado = True
+            plan[k] = ("botella", "botella_grande" if (N > 3 and rng.random() < 0.2) else "botella_chica")
+
+    def _alto_nivel(k: int) -> float:
+        tipo = plan[k][1]
+        if tipo == "botella_grande":
+            return 35 + _u(rng, -2, 2)
+        if tipo == "botella_chica":
+            return 25 + _u(rng, -1.5, 1.5)
+        if k == N:
+            return 15 + _u(rng, -0.5, 1.5)
+        return _u(rng, 16, 25) if N > 3 else 25 + _u(rng, -1.5, 1.5)
+
+    alto_niv = {k: _alto_nivel(k) for k in range(1, N + 1)}
     tabla, lateral, tira = _u(rng, 1.0, 1.8), _u(rng, 1.0, 2.0), _u(rng, 1.8, 2.6)
-    alto_total = sum(alto_niv.values()) + 4 * tabla
+    alto_total = sum(alto_niv.values()) + (N + 1) * tabla
     ancho_total = ancho_cm + 2 * lateral
     margen = _u(rng, 0.02, 0.08)
     frac_ancho = 1.0
@@ -275,10 +322,10 @@ def componer(rng: np.random.Generator, biblioteca: dict[str, list], clases: list
     def Y(cm: float) -> int:
         return int(round(ey0 + cm * s))
 
-    # niveles de arriba (3) hacia abajo (1): (techo interior, piso) en cm desde arriba del estante
+    # niveles de arriba (N) hacia abajo (1): (techo interior, piso) en cm desde arriba del estante
     niveles = {}
     yc = tabla
-    for k in (3, 2, 1):
+    for k in NIV:
         niveles[k] = (yc, yc + alto_niv[k])
         yc += alto_niv[k] + tabla
 
@@ -318,7 +365,7 @@ def componer(rng: np.random.Generator, biblioteca: dict[str, list], clases: list
     # piso visible de cada nivel (franja delante del fondo)
     pisos = {}
     for k, (t, b) in niveles.items():
-        banda = _u(rng, 0.4, 2.5) if k < 3 else _u(rng, 0.0, 0.8)
+        banda = _u(rng, 0.4, 2.5) if k < N else _u(rng, 0.0, 0.8)
         y0, y1 = Y(b - banda), Y(b)
         if y1 > y0:
             piso = fnd.textura(material if material != "negro" else "gris", y1 - y0, wi, rng).astype(np.float32)
@@ -327,12 +374,15 @@ def componer(rng: np.random.Generator, biblioteca: dict[str, list], clases: list
 
     # --- envases por nivel
     escena_vacia = rng.random() < p.p_estante_vacio
-    latas_medio = rng.random() < p.p_latas_medio
-    plan = {3: ("lata", "lata"), 2: ("lata", "lata") if latas_medio else ("botella", "botella_chica"),
-            1: ("botella", "botella_grande")}
+    latas_medio = any(plan[k][0] == "lata" for k in range(2, N))
+    desorden = rng.random() < p.p_desordenado
+    ordenado = (not desorden) and rng.random() < p.p_ordenado
+    modo_orden = "desordenado" if desorden else ("ordenado" if ordenado else "normal")
+    p_solape = 0.5 if desorden else (0.0 if ordenado else p.p_solape)
+    max_solape = 0.30 if desorden else p.max_solape
     objetos: list[Objeto] = []
     capacidad = {}
-    for k in (3, 2, 1):
+    for k in NIV:
         formato, tipo = plan[k]
         diam_med = (MEDIDAS[tipo][2] + MEDIDAS[tipo][3]) / 2
         cap = int((ancho_cm - 2) // (diam_med + 0.5))
@@ -341,11 +391,13 @@ def componer(rng: np.random.Generator, biblioteca: dict[str, list], clases: list
             continue
         a, b = p.llenado_latas if formato == "lata" else p.llenado_botellas
         n = int(np.clip(round(rng.beta(a, b) * cap), 1, cap))
-        nombres = _clases_nivel(rng, disp[formato], n, p)
+        nombres = _clases_nivel(rng, disp[formato], n, p, ordenado, 0.2 if desorden else None)
         prep = []
         for c in nombres:
             ruta = biblioteca[c][rng.integers(len(biblioteca[c]))]
-            prep.append((c, preparar_objeto(cargar_rgba(str(ruta)), tipo, s, rng, p)))
+            caido = desorden and rng.random() < p.p_caido
+            prep.append((c, preparar_objeto(cargar_rgba(str(ruta)), tipo, s, rng, p,
+                                            p.max_rotacion_desorden if desorden else None, caido)))
         # que entren en el ancho interior
         libre_px = (ix1 - ix0) - 2 - sum(o.shape[1] for _, o in prep)
         while prep and libre_px < 0:
@@ -353,13 +405,14 @@ def componer(rng: np.random.Generator, biblioteca: dict[str, list], clases: list
             libre_px += o.shape[1]
         if not prep:
             continue
-        conc = _u(rng, 0.3, 6.0)   # alta = parejo; baja = huecos grandes (nivel medio vacío)
+        # alta = parejo; baja = huecos grandes (nivel medio vacío)
+        conc = _u(rng, 4.0, 10.0) if ordenado else (_u(rng, 0.15, 1.5) if desorden else _u(rng, 0.3, 6.0))
         huecos = rng.dirichlet(np.full(len(prep) + 1, conc)) * libre_px
         x = ix0 + 1 + huecos[0]
         piso_y = Y(niveles[k][1])
         for i, (c, o) in enumerate(prep):
-            if i > 0 and rng.random() < p.p_solape:
-                x -= _u(rng, 0.03, p.max_solape) * min(o.shape[1], prep[i - 1][1].shape[1])
+            if i > 0 and rng.random() < p_solape:
+                x -= _u(rng, 0.03, max_solape) * min(o.shape[1], prep[i - 1][1].shape[1])
             base = piso_y - int(round(_u(rng, 0.0, max(0.1, pisos[k] * 0.8)) * s))
             xi = int(round(min(max(x, ix0), ix1 - o.shape[1])))
             objetos.append(Objeto(c, id_de[c], o, xi, base - o.shape[0], k))
@@ -437,7 +490,7 @@ def componer(rng: np.random.Generator, biblioteca: dict[str, list], clases: list
     # --- acercamiento: recorte a un solo nivel (sin envases de otros niveles)
     nivel_foto = None
     if acercamiento:
-        nivel_foto = int(rng.integers(1, 4))
+        nivel_foto = int(rng.integers(1, N + 1))
         t, b = niveles[nivel_foto]
         y0 = max(0, Y(t - _u(rng, 0, 0.6) * tabla))
         y1 = min(H, Y(b + tabla + _u(rng, 0, 0.3)))
@@ -480,6 +533,7 @@ def componer(rng: np.random.Generator, biblioteca: dict[str, list], clases: list
             cajas.append((objetos[i].cid, float(xi.min()), float(yi.min()), float(xi.max() + 1), float(yi.max() + 1)))
     meta = {"modo": f"nivel_{nivel_foto}" if acercamiento else "completo", "vista": vista, "luz": luz,
             "fondo": tipo_fondo, "pared": tipo_pared, "material": material, "latas_medio": latas_medio,
+            "n_niveles": N, "orden": modo_orden,
             "tira": con_tira, "sombra": bool(con_sombra), "px_por_cm": round(s, 2), "frac_ancho": round(frac_ancho, 2),
             "quitados_por_oclusion": len(quitar), "parciales_sin_etiqueta": parciales, "vacio": escena_vacia}
     return Escena(img, cajas, meta)

@@ -49,7 +49,6 @@ REGLAS_COLOR = {
     "sprite_botella": [("verde", 0.15, 1.0), ("oscuro", 0.0, 0.30)],
     "pepsi_lata": [("azul", 0.15, 1.0)],
     "pepsi_botella": [("azul", 0.15, 1.0)],
-    "7up_lata": [("verde", 0.30, 1.0)],
 }
 TONOS = {"rojo": [(0, 10), (165, 180)], "naranja": [(8, 25)], "verde": [(35, 85)], "azul": [(95, 130)]}
 
@@ -129,6 +128,57 @@ def candidatos_yolo(dir_imagenes: Path, dir_etiquetas: Path, clases: list[dict])
                 c.motivo = "no_parada"   # acostada, inclinada o caja deformada
             elif _tapado(i, cajas) > MAX_TAPADO:
                 c.motivo = "tapada"
+            salida.append(c)
+    return salida
+
+
+PREFIJO_WEB = "off__"        # fotos de producto de Open Food Facts (no vienen de un dataset con splits)
+MIN_ALTO_WEB = 150           # las fotos de producto miden ~400-1000 px de alto
+
+
+def caja_producto(img: Image.Image) -> tuple[int, int, int, int] | None:
+    """Caja del producto en una foto de catálogo: lo que difiere del color de fondo (mediana de las esquinas)."""
+    w, h = img.size
+    ch = max(1, round(200 * h / w))
+    a = np.asarray(img.convert("RGB").resize((200, ch))).astype(np.int16)
+    esquinas = np.concatenate([a[:8, :8].reshape(-1, 3), a[:8, -8:].reshape(-1, 3),
+                               a[-8:, :8].reshape(-1, 3), a[-8:, -8:].reshape(-1, 3)])
+    dif = np.abs(a - np.median(esquinas, axis=0)).sum(axis=2) > 60
+    filas, cols = np.where(dif.mean(axis=1) > 0.02)[0], np.where(dif.mean(axis=0) > 0.02)[0]
+    if filas.size == 0 or cols.size == 0:
+        return None
+    e = w / 200
+    return int(cols[0] * e), int(filas[0] * e), int((cols[-1] + 1) * e), int((filas[-1] + 1) * e)
+
+
+def candidatos_web(dir_web: Path, clases: list[dict]) -> list[Candidato]:
+    """Candidatos de las fotos de producto de ``dir_web/indice.csv`` (scripts/datos_off.py)."""
+    ruta = dir_web / "indice.csv"
+    if not ruta.exists():
+        return []
+    formato_de = {c["clase"]: c["formato"] for c in clases}
+    salida = []
+    with ruta.open(encoding="utf-8", newline="") as f:
+        for fila in csv.DictReader(f):
+            clase = fila["clase"]
+            imagen = dir_web / fila["archivo"]
+            if clase not in formato_de or not imagen.exists():
+                continue
+            try:
+                with Image.open(imagen) as im:
+                    caja = caja_producto(im)
+            except OSError:
+                continue
+            c = Candidato(imagen, clase, formato_de[clase], caja or (0, 0, 1, 1), imagen.stem)
+            if caja is None:
+                c.motivo = "sin_producto"
+            else:
+                w, h = caja[2] - caja[0], caja[3] - caja[1]
+                lo, hi = ASPECTO[c.formato]
+                if h < MIN_ALTO_WEB:
+                    c.motivo = "chica"
+                elif w <= 0 or not lo <= h / w <= hi:
+                    c.motivo = "no_parada"
             salida.append(c)
     return salida
 
@@ -347,18 +397,22 @@ def nombre_cache(cand: Candidato) -> str:
     return f"{cand.imagen.stem[:80]}_{x1}_{y1}_{x2}_{y2}.png"
 
 
-def cargar_biblioteca(dir_cache: Path, dir_train: Path | None = None) -> dict[str, list[Path]]:
+def cargar_biblioteca(dir_cache: Path, dir_train: Path | list[Path] | None = None) -> dict[str, list[Path]]:
     """{clase: [rutas PNG]} según indice.csv (si no hay índice, se recorren las carpetas).
 
-    Con ``dir_train`` se descartan los objetos cuya foto de origen ya NO está en train (por si el
-    dataset fusionado se regeneró y una foto pasó a val/test: evita filtrar evaluación al entrenamiento).
+    Con ``dir_train`` (una carpeta o una lista) se descartan los objetos cuya foto de origen ya NO está
+    en train (por si el dataset fusionado se regeneró y una foto pasó a val/test: evita filtrar
+    evaluación al entrenamiento).
     """
     filas = leer_indice(dir_cache)
     bib: dict[str, list[Path]] = {}
-    en_train = {p.name for p in dir_train.iterdir()} if dir_train and dir_train.is_dir() else None
+    carpetas = [dir_train] if isinstance(dir_train, Path) else list(dir_train or [])
+    carpetas = [d for d in carpetas if d.is_dir()]
+    en_train = {p.name for d in carpetas for p in d.iterdir()} if carpetas else None
     if filas:
         for f in filas:
-            if en_train is not None and f["origen"].split("|")[0] not in en_train:
+            origen = f["origen"].split("|")[0]
+            if en_train is not None and not origen.startswith(PREFIJO_WEB) and origen not in en_train:
                 continue
             p = dir_cache / f["archivo"]
             if p.exists():

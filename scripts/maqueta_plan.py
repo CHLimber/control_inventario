@@ -14,7 +14,7 @@ Garantías del plan (por sesión):
 
 Ejemplos (desde la raíz del repo):
     python scripts/maqueta_plan.py --sesiones 1 --escenas 26
-    python scripts/maqueta_plan.py --sesiones 2,3 --escenas 30 --envases 5,7up_lata=4 --ancho 75
+    python scripts/maqueta_plan.py --sesiones 2,3 --escenas 30 --envases 5,pepsi_lata=4 --ancho 75
 Si el plan ya tiene filas de esas sesiones, se reemplazan; las demás sesiones se conservan.
 """
 from __future__ import annotations

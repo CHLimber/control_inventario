@@ -115,7 +115,7 @@ class Clasificador:
 
     # API ----------------------------------------------------------------------
     def probabilidades(self, recortes: Sequence[np.ndarray]) -> np.ndarray:
-        """Matriz (n, 9) con el softmax de cada recorte (en el orden de config/clases.json)."""
+        """Matriz (n, n_clases) con el softmax de cada recorte (en el orden de config/clases.json)."""
         if len(recortes) == 0:
             return np.zeros((0, len(self.clases)), dtype=np.float32)
         modelo, tamano = self._modelo()

@@ -70,22 +70,22 @@ def test_todos_los_endpoints_del_contrato_existen(entorno):
 
 def test_clases(entorno):
     r = entorno.get("/api/clases")
-    assert r.status_code == 200 and len(r.json()["clases"]) == 9
+    assert r.status_code == 200 and len(r.json()["clases"]) == 8
 
 
 # ---------------------------------------------------------------- productos
 def test_crud_productos(entorno):
     lista = entorno.get("/api/productos").json()
-    assert len(lista) == 9 and lista[0]["precio"]
+    assert len(lista) == 8 and lista[0]["precio"]
 
     # Liberar una clase para poder crear otro producto con ella.
     ids = _ids(entorno)
-    assert entorno.delete(f"/api/productos/{ids['7up_lata']}").status_code == 204
-    assert len(entorno.get("/api/productos").json()) == 8
+    assert entorno.delete(f"/api/productos/{ids['sprite_botella']}").status_code == 204
+    assert len(entorno.get("/api/productos").json()) == 7
     inactivos = entorno.get("/api/productos", params={"incluir_inactivos": True}).json()
-    assert len(inactivos) == 9 and not next(p for p in inactivos if p["clase_modelo"] == "7up_lata")["activo"]
+    assert len(inactivos) == 8 and not next(p for p in inactivos if p["clase_modelo"] == "sprite_botella")["activo"]
 
-    r = entorno.put(f"/api/productos/{ids['7up_lata']}", json={"precio": "4.50", "activo": True})
+    r = entorno.put(f"/api/productos/{ids['sprite_botella']}", json={"precio": "4.50", "activo": True})
     assert r.status_code == 200 and r.json()["precio"] == "4.50" and r.json()["activo"]
 
     r = entorno.get(f"/api/productos/{ids['coca_lata']}")
@@ -108,9 +108,9 @@ def test_crear_producto_y_errores(entorno):
     assert entorno.put(f"/api/productos/{ids['coca_lata']}", json={"nombre": None}).status_code == 422
 
     # Reenviar su propia clase no es conflicto.
-    r = entorno.put(f"/api/productos/{ids['7up_lata']}", json={"clase_modelo": "7up_lata",
-                                                               "nombre": "7Up 355"})
-    assert r.status_code == 200 and r.json()["nombre"] == "7Up 355"
+    r = entorno.put(f"/api/productos/{ids['sprite_botella']}", json={"clase_modelo": "sprite_botella",
+                                                               "nombre": "Sprite 2 L"})
+    assert r.status_code == 200 and r.json()["nombre"] == "Sprite 2 L"
 
 
 # ---------------------------------------------------------------- movimientos y stock
@@ -220,7 +220,7 @@ def test_flujo_venta_escaneo_confirmacion(entorno):
     assert r.status_code == 201, r.text
     cierre = CierreOut.model_validate(r.json())
     assert cierre.estado == "pendiente" and cierre.usuario == "ana" and cierre.variante_modelo == "mock"
-    assert len(cierre.filas) == 9
+    assert len(cierre.filas) == 8
     for fila in cierre.filas:
         assert fila.esperado == esperado[fila.clase_modelo]
         assert fila.detectado == conteo[fila.clase_modelo]
@@ -276,7 +276,7 @@ def test_flujo_venta_escaneo_confirmacion(entorno):
     # Historial de diferencias.
     hist = entorno.get("/api/diferencias", params={"id_producto": ids["coca_lata"]}).json()
     assert len(hist) == 1 and hist[0]["diferencia"] == -1 and hist[0]["ajustado"] == 4
-    assert len(entorno.get("/api/diferencias").json()) == 9
+    assert len(entorno.get("/api/diferencias").json()) == 8
     assert entorno.get("/api/diferencias", params={"hasta": AYER.isoformat()}).json() == []
 
 

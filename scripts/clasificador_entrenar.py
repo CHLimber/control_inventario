@@ -6,7 +6,7 @@ modelos/clasificador/ (o en --salida):
   <modelo>.keras              mejor época (ModelCheckpoint + EarlyStopping), con el aumento y
                               la normalización ADENTRO: recibe píxeles 0-255
   <modelo>_metricas.json      val/test: accuracy, loss, precisión/recall por clase, matriz de
-                              confusión, confusiones botella↔lata y Sprite↔7up, barrido de umbral
+                              confusión, confusiones botella↔lata, barrido de umbral
   <modelo>_historial.csv      loss/accuracy por época
   matriz_<modelo>_<split>.png matriz de confusión
   comparacion.csv / .md       tabla comparativa de todos los modelos entrenados en esa carpeta
@@ -169,7 +169,7 @@ def pesos_clase(etiquetas: np.ndarray, n_clases: int) -> dict[int, float]:
 
 # ----------------------------------------------------------------------------- métricas
 def confusiones_clave(matriz: np.ndarray, clases: list[str]) -> dict:
-    """Errores que más importan en el inventario: botella↔lata de la MISMA marca y Sprite↔7up."""
+    """Errores que más importan en el inventario: botella↔lata de la MISMA marca."""
     idx = {c: i for i, c in enumerate(clases)}
     soporte = matriz.sum(axis=1)
 
@@ -184,11 +184,7 @@ def confusiones_clave(matriz: np.ndarray, clases: list[str]) -> dict:
         b, l_ = f"{m}_botella", f"{m}_lata"
         if b in idx and l_ in idx:
             botella_lata += [par(b, l_), par(l_, b)]
-    sprite_7up = [par(a, b) for a, b in (("sprite_lata", "7up_lata"), ("7up_lata", "sprite_lata"),
-                                         ("sprite_botella", "7up_lata"), ("7up_lata", "sprite_botella"))
-                  if a in idx and b in idx]
-    return {"botella_lata": botella_lata, "total_botella_lata": int(sum(p["n"] for p in botella_lata)),
-            "sprite_7up": sprite_7up, "total_sprite_7up": int(sum(p["n"] for p in sprite_7up))}
+    return {"botella_lata": botella_lata, "total_botella_lata": int(sum(p["n"] for p in botella_lata))}
 
 
 def barrido_umbral(probs: np.ndarray, etiquetas: np.ndarray) -> list[dict]:
@@ -381,8 +377,7 @@ def entrenar_modelo(nombre: str, dir_recortes: Path, salida: Path, dir_logs: Pat
         if s in met:
             m = met[s]
             print(f"  {s:5s} accuracy {m['accuracy']:.3f}  loss {m['loss']:.3f}  macro-F1 {m['macro_f1']:.3f}  "
-                  f"botella↔lata {m['confusiones_clave']['total_botella_lata']}  "
-                  f"sprite↔7up {m['confusiones_clave']['total_sprite_7up']}")
+                  f"botella↔lata {m['confusiones_clave']['total_botella_lata']}")
     if prueba:
         imprimir_estimacion(nombre, met, crono.tiempos, crono_ft.tiempos, dir_recortes)
     keras.backend.clear_session()
@@ -411,7 +406,7 @@ def imprimir_estimacion(nombre: str, met: dict, t_fase1: list[float], t_fase2: l
 
 # ----------------------------------------------------------------------------- comparación
 COLUMNAS = ["modelo", "tamano", "parametros", "epocas", "minutos", "val_accuracy", "val_loss", "val_macro_f1",
-            "test_accuracy", "test_loss", "test_macro_f1", "test_botella_lata", "test_sprite_7up",
+            "test_accuracy", "test_loss", "test_macro_f1", "test_botella_lata",
             "umbral_sugerido", "n_train", "prueba", "fecha"]
 
 
@@ -426,7 +421,6 @@ def fila_comparacion(met: dict) -> dict:
         "test_loss": round(t["loss"], 4) if t.get("n") else None,
         "test_macro_f1": round(t["macro_f1"], 4) if t.get("n") else None,
         "test_botella_lata": t["confusiones_clave"]["total_botella_lata"] if t.get("n") else None,
-        "test_sprite_7up": t["confusiones_clave"]["total_sprite_7up"] if t.get("n") else None,
         "umbral_sugerido": met.get("umbral_sugerido"), "n_train": met["n"]["train"],
         "prueba": met.get("prueba", False), "fecha": met.get("fecha"),
     }
@@ -434,14 +428,14 @@ def fila_comparacion(met: dict) -> dict:
 
 def tabla_markdown(filas: list[dict]) -> str:
     cab = ["modelo", "entrada", "parámetros", "épocas", "min", "val acc", "val loss", "test acc", "test loss",
-           "test F1 macro", "bot↔lata (test)", "sprite↔7up (test)", "umbral sug.", "n train", "prueba"]
+           "test F1 macro", "bot↔lata (test)", "umbral sug.", "n train", "prueba"]
     fmt = lambda v: "—" if v is None else (f"{v:.3f}" if isinstance(v, float) else str(v))  # noqa: E731
     lineas = ["| " + " | ".join(cab) + " |", "|" + "---|" * len(cab)]
     for f in filas:
         lineas.append("| " + " | ".join(fmt(x) for x in (
             f["modelo"], f"{f['tamano']}px", f"{f['parametros']:,}".replace(",", "."), f["epocas"], f["minutos"],
             f["val_accuracy"], f["val_loss"], f["test_accuracy"], f["test_loss"], f["test_macro_f1"],
-            f["test_botella_lata"], f["test_sprite_7up"], f["umbral_sugerido"], f["n_train"],
+            f["test_botella_lata"], f["umbral_sugerido"], f["n_train"],
             "sí" if f["prueba"] else "no")) + " |")
     return "\n".join(lineas)
 

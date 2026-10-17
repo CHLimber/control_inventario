@@ -1,8 +1,14 @@
 # Clasificador de envases (variante A)
 
 El detector YOLO de una clase (`producto`) recorta cada envase; el clasificador decide cuál de
-las **9 clases** de `config/clases.json` es cada recorte, o `"desconocido"` si no está seguro.
-Es la práctica 01 (perros y gatos) generalizada a 9 clases en color, más transfer learning.
+las **8 clases** de `config/clases.json` es cada recorte, o `"desconocido"` si no está seguro.
+Es la práctica 01 (perros y gatos) generalizada a 8 clases en color, más transfer learning.
+
+> **Cambio de clases (2026-10-17):** se quitó `7up_lata` (quedan 8). Los modelos y las tablas de resultados de
+> más abajo (MobileNetV2 0,918 de accuracy en test, etc.) son de la ronda anterior, **con 9 clases**: ya no son
+> compatibles con `config/clases.json` (`Clasificador` los rechaza con un error claro) y hay que **reentrenar**
+> con los recortes nuevos (`datos/recortes`: ~11 000 en train; ver `docs/datos.md`). La métrica Sprite↔7up se
+> eliminó de los reportes; queda botella↔lata.
 
 ## Archivos
 
@@ -36,7 +42,7 @@ clf.probabilidades(recortes)                  # (n, 9) softmax, por si se quiere
 
 ## Decisiones (para defender)
 
-**RGB y no gris.** El color es la pista principal (Coca roja, Fanta naranja, Sprite/7up verdes,
+**RGB y no gris.** El color es la pista principal (Coca roja, Fanta naranja, Sprite verde,
 Pepsi azul). En perros y gatos el gris alcanzaba; acá Coca y Fanta en gris se parecen.
 
 **Letterbox.** Se escala el lado mayor al tamaño final y se rellena con gris (128). Estirar a un
@@ -56,7 +62,7 @@ Hay un test que verifica que el tensor de `tf.data` es idéntico al de inferenci
 `RandomZoom(0.15)`, `RandomTranslation(0.08)`, `RandomBrightness(0.2)`, `RandomContrast(0.2)`.
 - Sin volteo vertical: no hay botellas cabeza abajo en un estante.
 - **Sin volteo horizontal**: invierte texto y logo; un "Coca-Cola" en espejo no existe y las marcas
-  se separan justamente por logo/tipografía (Sprite vs 7up son ambas verdes). En perros y gatos sí
+  se separan justamente por logo/tipografía (Sprite y Fanta, por ejemplo, difieren sobre todo en el color). En perros y gatos sí
   servía (un perro en espejo es un perro).
 - Sin cambio de tono: cambiaría el color, la pista principal.
 

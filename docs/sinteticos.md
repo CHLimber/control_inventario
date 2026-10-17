@@ -1,7 +1,7 @@
 # Estantes sintéticos (Fase 2)
 
-Generador de imágenes de **estante de 3 niveles con una sola fila** (abajo botellas grandes, al medio
-botellas chicas, arriba latas; ver `maqueta/GUIA.md`) armadas por *copy-paste* de envases reales recortados
+Generador de imágenes de **estante de 3 a 5 niveles con una sola fila** (abajo botellas grandes, al medio
+botellas chicas o latas, arriba latas; ver `maqueta/GUIA.md`) armadas por *copy-paste* de envases reales recortados
 sin fondo. Cada imagen trae **etiquetas YOLO exactas** (1 clase `producto` y 9 clases) y su **conteo exacto**.
 
 Notebook explicativo: `notebooks/03_sinteticos.ipynb`. Figuras de revisión: `docs/sinteticos/muestras.png`
@@ -122,6 +122,38 @@ antes de dibujar (no queda pegado sin etiqueta). En los acercamientos, un envase
 del cuadro no se etiqueta (`parciales_sin_etiqueta` en meta.csv; con ≥ 40 % visible sí, con la caja recortada).
 
 **Reproducibilidad:** la imagen *i* usa `default_rng([semilla, i])`: mismo resultado con 1 o 4 procesos.
+
+## Niveles y modos de orden (3.ª ronda, 2026-10-17)
+
+- **Niveles:** `Parametros.n_niveles` = 3, 4 o 5 (0 = sortear con `p_niveles`, por defecto 25 / 40 / 35 %). Abajo
+  siempre botellas grandes y arriba siempre latas; en el medio, desde arriba, cada nivel lleva latas con
+  probabilidad `p_latas_medio` hasta el primero que no, y debajo de ese hay botellas chicas (a veces grandes).
+  Así las latas nunca quedan debajo de una botella. Alturas: grande 35 cm, chica 25 cm, lata 15 cm (arriba)
+  o 16-25 cm (en el medio).
+- **Modo de orden** (uno por estante, columna `orden` de `meta.csv`; `n_niveles` también queda en `meta.csv`):
+  - `ordenado` (`p_ordenado` 25 %): bloques contiguos de la misma clase, huecos parejos y **sin solapes**.
+  - `desordenado` (`p_desordenado` 25 %): envases inclinados hasta ±22° (`max_rotacion_desorden`), algunos
+    **acostados** (`p_caido` 12 %), huecos irregulares, más mezcla y solapes de hasta el 30 %; la regla del 40 %
+    visible sigue quitando los que quedan casi tapados.
+  - `normal` (el resto): el comportamiento de la primera versión.
+- Las cajas siguen saliendo del mapa de ids, así que el desorden no las vuelve inexactas (cubierto en
+  `tests/test_sinteticos.py`).
+
+### Biblioteca ampliada con fuentes de góndola
+
+Las fuentes que no entran al multiclase pero tienen envases completos de frente (`cold_drinks_2`,
+`hccb_overall`; bandera `"biblioteca": True` en `src/datos/fuentes.py`) alimentan la biblioteca así:
+
+```bat
+python scripts/datos_biblioteca.py          :: arma datos/fusion/_biblioteca (solo train, clases resueltas por auto:)
+python scripts/sinteticos_objetos.py --fuente datos/fusion/_biblioteca --max-por-clase 400 --procesos 4
+```
+
+`sinteticos_generar.py` lee automáticamente las dos carpetas de train (multiclase y `_biblioteca`) para
+descartar objetos cuya foto ya no esté en train.
+
+**7Up:** la clase `7up_lata` se quitó del proyecto el 2026-10-17. Sus recortes ya no se usan y la
+biblioteca/lotes anteriores (con 9 clases) se deben regenerar.
 
 ## Revisión a ojo (qué mirar en la grilla)
 

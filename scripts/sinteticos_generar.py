@@ -50,7 +50,8 @@ def main() -> None:
 
     salida = Path(a.salida) if Path(a.salida).is_absolute() else DIR_DATOS / "sinteticos" / a.salida
     dir_train = a.fusion / "multiclase" / "images" / "train"
-    bib = obj.cargar_biblioteca(a.objetos, dir_train) if a.objetos.exists() else {}
+    extra = a.fusion / "_biblioteca" / "images" / "train"      # fuentes que solo alimentan la biblioteca
+    bib = obj.cargar_biblioteca(a.objetos, [dir_train, extra]) if a.objetos.exists() else {}
     if not bib:
         sys.exit(f"No hay objetos en {a.objetos}: correr antes scripts/sinteticos_objetos.py")
     fondos = fnd.listar_fondos_reales(a.fusion / "multiclase" / "images" / "train", DIR_MAQUETA / "fondos")

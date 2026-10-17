@@ -14,20 +14,20 @@ el celular). Puede ser la misma persona.
 - [ ] Servidor levantado en la PC y panel abierto en el proyector (ver README).
 - [ ] Celular en la misma red, con la página del escáner abierta y probada (una foto de prueba).
 - [ ] `VARIANTE_VISION` con el modelo final (no `mock`) y la variante anotada para decirla.
-- [ ] Productos cargados en el panel con su `clase_modelo` y precio (las 9 clases).
+- [ ] Productos cargados en el panel con su `clase_modelo` y precio (las 8 clases).
 - [ ] Maqueta armada con la **configuración demo** (tabla de abajo), con el **fondo y la luz que
       mejor resultado dieron** en la sesión de validación. Etiquetas de frente, nada girado.
 - [ ] Marcas en el piso para las fotos (frontal, izq20, der20). Celular cargado.
 - [ ] Ensayo completo hecho al menos una vez **en el mismo lugar y con la misma luz**.
 - [ ] Plan B listo: video grabado del ensayo y fotos del ensayo en el celular.
 
-### Configuración demo (19 envases)
+### Configuración demo (17 envases)
 
 Agrupada por marca para que se vea clara. Niveles de abajo hacia arriba, izquierda → derecha:
 
 | Nivel | Envases |
 |---|---|
-| 3 · latas | Coca-Cola · Coca-Cola · Fanta · Fanta · Sprite · Pepsi · 7Up · 7Up |
+| 3 · latas | Coca-Cola · Coca-Cola · Fanta · Fanta · Sprite · Pepsi |
 | 2 · botellas chicas | Coca-Cola · Fanta · Fanta · Sprite · Pepsi · Pepsi |
 | 1 · botellas grandes | Coca-Cola · Coca-Cola · Fanta · Sprite · Pepsi |
 
@@ -41,7 +41,6 @@ Agrupada por marca para que se vea clara. Niveles de abajo hacia arriba, izquier
 | sprite_lata | 1 |
 | pepsi_botella | 3 |
 | pepsi_lata | 1 |
-| 7up_lata | 2 |
 
 ---
 

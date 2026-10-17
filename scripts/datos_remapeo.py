@@ -21,6 +21,7 @@ from src.datos.rutas import RUTA_REMAPEO, fuentes_descargadas, nombres_por_alias
 
 ENCABEZADO = """\
 # BORRADOR generado por scripts/datos_remapeo.py y revisado a mano por el agente Datos.
+# 3.ª ronda (cold_drinks_2, hccb_overall): propuesta pendiente de aprobación.
 # Lo APRUEBA el orquestador. Las entradas existentes se respetan al regenerar (salvo --regenerar).
 #
 # Formato:  <alias_dataset>: { <clase_original>: <clase_nuestra> | solo_detector | descartar }
@@ -28,6 +29,9 @@ ENCABEZADO = """\
 #   - solo_detector = es una bebida/envase y sirve como "producto" para el detector de 1 clase,
 #     pero su marca no es una de las nuestras o no es confiable (no entra al multiclase ni a recortes;
 #     en el multiclase queda como fondo).
+#   - auto:<marca> = el dataset da la marca pero no el formato (p. ej. auto:pepsi): botella o lata
+#     según la forma de la caja (src/datos/remapeo.py: RATIO_LATA / RATIO_BOTELLA); si es dudosa, solo_detector.
+#     auto:<marca>:botella acepta solo botellas por la forma (lo que no encaje queda como solo_detector).
 #   - descartar = no es un producto de interés (snacks, vasos, fondo...): la caja se elimina.
 #   - Una clase original que no figure acá se trata como "descartar".
 #

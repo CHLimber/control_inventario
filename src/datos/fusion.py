@@ -11,12 +11,13 @@ from __future__ import annotations
 import hashlib
 import os
 import shutil
+from functools import lru_cache
 from pathlib import Path
 
 import pandas as pd
 import yaml
 
-from src.datos.remapeo import DESCARTAR, SOLO_DETECTOR, destino, es_generica
+from src.datos.remapeo import DESCARTAR, SOLO_DETECTOR, destino, es_auto, es_generica, resolver_auto
 from src.datos.split import seleccionar
 from src.datos.util import SPLITS, escribir_etiquetas_yolo, leer_etiquetas_yolo, ruta_etiqueta
 
@@ -24,10 +25,33 @@ MODOS = ("detector_1clase", "multiclase")
 MIN_LADO_NORM = 1e-3  # cajas degeneradas (menos de ~0,1 % de la imagen) se ignoran
 
 
+@lru_cache(maxsize=8192)
+def _tam_imagen(ruta_txt: Path) -> tuple[int, int] | None:
+    """(ancho, alto) de la imagen de una etiqueta YOLO (labels/x.txt -> images/x.<ext>), leyendo solo el encabezado."""
+    from PIL import Image
+
+    partes = list(ruta_txt.parts)
+    for i in range(len(partes) - 1, -1, -1):
+        if partes[i] == "labels":
+            partes[i] = "images"
+            break
+    base = Path(*partes)
+    for ext in (".jpg", ".jpeg", ".png", ".webp", ".bmp"):
+        ruta = base.with_name(base.stem + ext)
+        if ruta.exists():
+            with Image.open(ruta) as im:
+                return im.size
+    return None
+
+
 def cajas_remapeadas(ruta_txt: Path, nombres: list[str], remapeo: dict, alias: str,
                      modo: str, clases: list[str]) -> list[tuple[int, float, float, float, float]]:
-    """Cajas de una imagen con el id de clase de salida según el modo."""
+    """Cajas de una imagen con el id de clase de salida según el modo.
+
+    Un destino ``auto:<marca>`` (ver src/datos/remapeo.py) decide botella o lata por la forma de la caja.
+    """
     salida = []
+    tam = None
     for cid, xc, yc, w, h in leer_etiquetas_yolo(ruta_txt):
         if w < MIN_LADO_NORM or h < MIN_LADO_NORM:
             continue
@@ -35,6 +59,9 @@ def cajas_remapeadas(ruta_txt: Path, nombres: list[str], remapeo: dict, alias: s
         dest = destino(remapeo, alias, nombre)
         if dest == DESCARTAR:
             continue
+        if es_auto(dest):
+            tam = tam or _tam_imagen(ruta_txt) or (1, 1)
+            dest = resolver_auto(dest, w * tam[0], h * tam[1], clases)
         if modo == "detector_1clase":
             salida.append((0, xc, yc, w, h))
         elif dest != SOLO_DETECTOR and dest in clases:
@@ -76,7 +103,7 @@ def construir(df: pd.DataFrame, dir_raw: Path, dir_salida: Path, modo: str, rema
     """Arma un dataset fusionado. `df` es el índice con columnas grupo y split.
 
     - detector_1clase: toda caja que no se descarta pasa a 'producto' (id 0).
-    - multiclase: solo cajas de las 9 clases; otras bebidas con marca (cerveza, Red Bull...)
+    - multiclase: solo cajas de las 8 clases; otras bebidas con marca (cerveza, Red Bull...)
       quedan como fondo. Se excluyen imágenes con cajas de clases genéricas sin marca
       (p. ej. 'Cans'), porque podrían ser una de nuestras marcas sin etiquetar.
     - multiclase: si una caja tiene color incoherente con su clase (`rechazos_color`, de

@@ -203,7 +203,7 @@ def seccion_color(clases: list[str]) -> list[str]:
     md = ["`scripts/datos_color.py` mide, en la zona central de cada caja con marca, la fracción de píxeles "
           "rojos/naranjas/verdes/azules, oscuros (líquido de cola) y grises, y aplica un mínimo por clase "
           "(`src/datos/color.py`): coca_lata rojo ≥ 0,15; coca_botella rojo ≥ 0,05 y oscuro ≥ 0,10 (botella "
-          "vacía); fanta naranja ≥ 0,10; sprite/7up verde ≥ 0,08 (sprite_botella oscuro ≤ 0,35); pepsi azul ≥ "
+          "vacía); fanta naranja ≥ 0,10; sprite verde ≥ 0,08 (sprite_botella oscuro ≤ 0,35); pepsi azul ≥ "
           "0,08; y descarta las cajas en escala de grises (gris > 0,97). La caja rechazada no entra a los "
           "recortes y su imagen sale del multiclase (queda en el detector). Nada se borra de `raw/`; el "
           "detalle está en `fusion/_control_color.csv`, `fusion/multiclase/_descartes_color.csv` y en la "
@@ -211,7 +211,7 @@ def seccion_color(clases: list[str]) -> list[str]:
           f"Cajas rechazadas: {int(col['rechazada'].sum())} de {len(col)}. Porcentaje por clase y fuente:", "",
           tabla_md(tasa), "",
           "Qué saca (ver grillas): variantes de otro color rotuladas con la marca (Fanta frutilla/uva/"
-          "manzana, Pepsi Diet, 7up Free), latas naranjas rotuladas coca_lata y botellas vacías de "
+          "manzana, Pepsi Diet), latas naranjas rotuladas coca_lata y botellas vacías de "
           "darians_bottle, las copias en grises de again_aug y los recortes tapados por los cuadros negros "
           "(cutout) de cold_drinks. Las latas de Coca-Cola con diseño geométrico rojo/turquesa de darians "
           "son una edición real de Coca-Cola: con rojo ≥ 0,15 se conserva la mayoría.", "",
@@ -280,7 +280,7 @@ def main() -> None:
           "se usa la carpeta train/ (las etiquetas de valid/test están desplazadas).",
           "- **detector_1clase**: toda caja no descartada → `producto`; imágenes sin cajas útiles como negativos "
           "(≤ 10 % por split).",
-          "- **multiclase**: solo datasets de marcas y cajas de las 9 clases; las otras bebidas quedan como fondo. "
+          "- **multiclase**: solo datasets de marcas y cajas de las 8 clases; las otras bebidas quedan como fondo. "
           "Se excluyen las imágenes con cajas genéricas sin marca (`Cans`, `Bottle-Detection`...), que podrían "
           "esconder una de nuestras marcas sin etiquetar.",
           "- **recortes**: margen 5 %, se descartan cajas con lado < 32 px, borrosas (varianza del Laplaciano "

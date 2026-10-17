@@ -62,7 +62,7 @@ def cargar_clases() -> dict:
 
 
 def nombres_clases() -> list[str]:
-    """Las 9 clases del modelo, en el orden de sus salidas (sin 'desconocido')."""
+    """Las 8 clases del modelo, en el orden de sus salidas (sin 'desconocido')."""
     return [c["clase"] for c in cargar_clases()["clases"]]
 
 
