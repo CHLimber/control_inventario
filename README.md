@@ -27,6 +27,7 @@ En VS Code, el kernel de los notebooks es `inventariovision`.
 | `contratos/modelos_bd.py` + `docs/esquema_bd.md` | tablas, stock esperado y conciliación |
 | `contratos/vision_types.py` | `Caja`, `ResultadoConteo`, `contar(imagenes) -> ResultadoConteo`, mediana por clase |
 | `contratos/api_schemas.py` | endpoints y modelos Pydantic de la API |
+| `src/vision/pipeline.py` | pipeline real: `contar()` con la variante A (detector + clasificador) o B (YOLO multiclase) |
 | `src/vision/pipeline_mock.py` | pipeline falso con la forma real, para la API y la web |
 | `src/config.py` | rutas y variables de entorno |
 
@@ -35,7 +36,7 @@ En VS Code, el kernel de los notebooks es `inventariovision`.
 ```
 config/       clases.json (fuente de verdad), remapeo_clases.yaml
 contratos/    api_schemas.py, modelos_bd.py, vision_types.py
-docs/         guía de la práctica 01, esquema_bd.md, ...
+docs/         guía de la práctica 01, esquema_bd.md, demo.md (preparar y grabar la demostración), ...
 notebooks/    01 viabilidad · 02 datos · 03 sintéticos · 04 detector · 05 clasificador · 06 evaluación
 src/          db/ api/ conciliacion/ rag/ vision/
 web/          escaner/ (celular) · panel/ (PC)

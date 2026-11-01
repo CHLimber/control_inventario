@@ -7,13 +7,15 @@ carpeta de fotos. El servidor real usa src.api.main:app (todo desde src.config).
 """
 from __future__ import annotations
 
+import logging
 import os
+import threading
 from pathlib import Path
 from typing import Any
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse, RedirectResponse
+from fastapi.responses import JSONResponse, RedirectResponse, Response
 from fastapi.staticfiles import StaticFiles
 
 from src import config
@@ -38,6 +40,8 @@ API del **control de inventario por visión** (arqueo de mercadería).
 Web: `/escaner/` (celular), `/panel/` (PC) y `/laboratorio/` (probar los modelos). Fotos: `/escaneos/...`.
 """
 
+log = logging.getLogger(__name__)
+
 _CODIGOS_ERROR: dict[type[ErrorConciliacion], int] = {
     CierreNoEncontrado: 404,
     CierreYaConfirmado: 409,
@@ -59,6 +63,27 @@ class EstaticosOpcionales(StaticFiles):
             return "", None
         return super().lookup_path(path)
 
+    async def get_response(self, path: str, scope) -> Response:
+        # Sin esto el navegador reutiliza por su cuenta un .js o .html viejo después de un cambio.
+        # no-cache = siempre preguntar; si no cambió, el servidor responde 304 sin reenviar el archivo.
+        respuesta = await super().get_response(path, scope)
+        respuesta.headers.setdefault("Cache-Control", "no-cache")
+        return respuesta
+
+
+def precargar_en_segundo_plano(variante: str) -> None:
+    """Carga los modelos mientras el servidor arranca: el primer escaneo no espera ~10 s."""
+    def tarea() -> None:
+        try:
+            from src.vision.pipeline import precargar
+
+            precargar(variante)
+            log.info("Modelos de la variante %s cargados", variante)
+        except Exception:   # el escaneo mostrará el error real si los pesos faltan
+            log.exception("No se pudieron precargar los modelos de la variante %s", variante)
+
+    threading.Thread(target=tarea, name="precarga-modelos", daemon=True).start()
+
 
 def crear_app(url_bd: str | None = None, pipeline: Any = None,
               dir_escaneos: Path | str | None = None, variante: str | None = None,
@@ -67,7 +92,7 @@ def crear_app(url_bd: str | None = None, pipeline: Any = None,
 
     url_bd:       URL de SQLAlchemy; por defecto src.config.url_bd() (URL_BD).
     pipeline:     función contar(imagenes) u objeto/módulo con .contar; por defecto la
-                  variante de VARIANTE_VISION (hoy solo existe el mock).
+                  variante de VARIANTE_VISION (mock, A o B: src.vision.pipeline).
     dir_escaneos: dónde se guardan las fotos; por defecto src.config.DIR_ESCANEOS.
     """
     variante = variante or config.VARIANTE_VISION
