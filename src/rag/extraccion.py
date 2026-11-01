@@ -71,12 +71,22 @@ def _anio(texto: str | None, hoy: date) -> tuple[int, bool]:
     return (a + 2000 if a < 100 else a), True
 
 
+NUMEROS = {"dos": 2, "tres": 3, "cuatro": 4, "cinco": 5, "seis": 6, "siete": 7, "ocho": 8,
+           "nueve": 9, "diez": 10, "quince": 15, "veinte": 20, "treinta": 30}
+_CANTIDAD_RE = r"\d{1,3}|" + "|".join(NUMEROS)
+
+
+def _cantidad(texto: str) -> int:
+    return int(texto) if texto.isdigit() else NUMEROS[texto]
+
+
 def extraer_fechas(texto: str, hoy: date) -> Rango | None:
     """Devuelve el rango de fechas mencionado, o None si no hay ninguno.
 
     Reconoce: hoy, ayer, anteayer, esta semana, la semana pasada, este mes, el mes
-    pasado, últimos N días, el lunes..., el 12 de octubre (de 2026), 12/10(/2026),
-    del 1 al 10 de octubre, entre el 1 y el 10 de octubre, del 1/10 al 10/10.
+    pasado, últimos N días, últimas N semanas (N en cifras o en palabras: "dos"), el
+    lunes..., el 12 de octubre (de 2026), 12/10(/2026), del 1 al 10 de octubre, entre el 1
+    y el 10 de octubre, del 1/10 al 10/10.
     """
     t = normalizar(texto)
 
@@ -118,9 +128,9 @@ def extraer_fechas(texto: str, hoy: date) -> Rango | None:
             return Rango(f, f, m.group(0))
 
     # Relativas
-    m = re.search(r"\bultimos? (\d{1,3}) dias\b", t)
+    m = re.search(rf"\bultim[oa]s? ({_CANTIDAD_RE}) (dias|semanas)\b", t)
     if m:
-        n = max(1, int(m.group(1)))
+        n = max(1, _cantidad(m.group(1))) * (7 if m.group(2) == "semanas" else 1)
         return Rango(hoy - timedelta(days=n - 1), hoy, m.group(0))
     if re.search(r"\bsemana pasada\b", t):
         lunes = hoy - timedelta(days=hoy.weekday() + 7)

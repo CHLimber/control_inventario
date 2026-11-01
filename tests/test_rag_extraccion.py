@@ -44,6 +44,9 @@ def test_normalizar():
     ("entre el 28 de septiembre y el 3 de octubre", "2026-09-28", "2026-10-03"),
     ("del 1/10 al 8/10", "2026-10-01", "2026-10-08"),
     ("los últimos 3 días", "2026-10-13", "2026-10-15"),
+    ("los últimos diez días", "2026-10-06", "2026-10-15"),
+    ("¿qué faltó en las últimas dos semanas?", "2026-10-02", "2026-10-15"),
+    ("las últimas 3 semanas", "2026-09-25", "2026-10-15"),
     ("el lunes", "2026-10-12", "2026-10-12"),
     ("el 20 de diciembre", "2025-12-20", "2025-12-20"),   # futuro -> año pasado
 ])
