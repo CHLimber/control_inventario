@@ -4,6 +4,7 @@
  * aplican acá, así moverlos no vuelve a llamar a la API.
  *
  * API: GET /api/laboratorio/modelos · POST /api/laboratorio/analizar · POST /api/laboratorio/clasificar
+ *      POST /api/laboratorio/sintetico (estante sintético con su conteo exacto)
  * No usa la BD ni el modo simulado del panel.
  */
 (function () {
@@ -34,14 +35,18 @@
     resultado: null,    // respuesta de /analizar
     seleccion: null,    // índice de caja elegida
     recortes: [],       // [{archivo, url, resultado|null, error|null}]
+    verdad: null,       // estante sintético: {cajas, conteo, semilla, meta}; null con una foto propia
+    reales: false,      // dibujar las cajas reales
   };
 
   // ------------------------------------------------------------------ preferencias
+  // 'lab2.': las elecciones guardadas antes de que existieran los modelos recomendados no cuentan.
+  const PREFIJO_PREF = 'lab2.';
   function leerPref(clave, defecto) {
-    try { const v = localStorage.getItem('lab.' + clave); return v === null ? defecto : JSON.parse(v); } catch { return defecto; }
+    try { const v = localStorage.getItem(PREFIJO_PREF + clave); return v === null ? defecto : JSON.parse(v); } catch { return defecto; }
   }
   function guardarPref(clave, valor) {
-    try { localStorage.setItem('lab.' + clave, JSON.stringify(valor)); } catch { /* sin almacenamiento */ }
+    try { localStorage.setItem(PREFIJO_PREF + clave, JSON.stringify(valor)); } catch { /* sin almacenamiento */ }
   }
 
   // ------------------------------------------------------------------ red
@@ -76,17 +81,24 @@
 
     const selDet = $('sel-detector');
     selDet.innerHTML = detectores.length
-      ? detectores.map((d) => `<option value="${esc(d.id)}">${esc(d.nombre)} · ${esc(d.tipo)}</option>`).join('')
+      ? detectores.map((d) => `<option value="${esc(d.id)}">${d.recomendado ? '★ ' : ''}${esc(d.nombre)} — ${esc(d.descripcion || d.tipo)}</option>`).join('')
       : '<option value="">(no hay detectores)</option>';
     const selCls = $('sel-clasificador');
     selCls.innerHTML = '<option value="">Ninguno (solo detector)</option>' + clasificadores.map((c) =>
-      `<option value="${esc(c.id)}">${esc(c.nombre)} · ${c.clases.length} clases${c.coincide_config ? '' : ' ⚠'}</option>`).join('');
+      `<option value="${esc(c.id)}">${c.principal ? '★ ' : ''}${esc(c.nombre)}${c.descripcion ? ' — ' + esc(c.descripcion) : ''}${c.coincide_config ? '' : ' ⚠'}</option>`).join('');
 
+    // Sin elección guardada: la variante recomendada (la más fuerte medida).
     const det = leerPref('detector', null);
-    if (detectores.some((d) => d.id === det)) selDet.value = det;
     const cls = leerPref('clasificador', null);
-    if (cls === '' || clasificadores.some((c) => c.id === cls)) selCls.value = cls;
-    else if (clasificadores.length) selCls.value = (clasificadores.find((c) => /(^|\/)clasificador\.keras$/.test(c.id)) || clasificadores[0]).id;
+    const hayDet = detectores.some((d) => d.id === det);
+    const hayCls = cls === '' || clasificadores.some((c) => c.id === cls);
+    if (hayDet && hayCls) {
+      selDet.value = det;
+      selCls.value = cls;
+    } else {
+      aplicarVariante(estado.modelos.variante_recomendada, false);
+    }
+    $('card-sintetico').hidden = !estado.modelos.sinteticos;
     mostrarInfoModelos();
 
     if (!detectores.length) {
@@ -95,7 +107,51 @@
     }
   }
 
+  const DESCRIPCION_VARIANTE = {
+    A: 'Detector de 1 clase + clasificador MobileNetV2 (la arquitectura principal del proyecto).',
+    B: 'YOLO multiclase: detecta y clasifica en una sola pasada.',
+  };
+
+  /** Elige el detector y el clasificador de una variante del sistema (A o B). */
+  function aplicarVariante(variante, reanalizar = true) {
+    const v = estado.modelos?.variantes?.[variante];
+    if (!v) return;
+    if (!estado.modelos.detectores.some((d) => d.id === v.detector)) {
+      alerta($('avisos'), 'warning', `Falta el detector de la variante ${variante} (<code>${esc(v.detector)}</code>).`);
+      return;
+    }
+    $('sel-detector').value = v.detector;
+    $('sel-clasificador').value = estado.modelos.clasificadores.some((c) => c.id === v.clasificador) ? v.clasificador : '';
+    guardarPref('detector', $('sel-detector').value);
+    guardarPref('clasificador', $('sel-clasificador').value);
+    mostrarInfoModelos();
+    if (reanalizar) {
+      if (pestanaRecortesActiva()) clasificarRecortes(estado.recortes);
+      else analizar();
+    }
+  }
+
+  function varianteActual() {
+    const vs = estado.modelos?.variantes || {};
+    return Object.keys(vs).find((k) => vs[k].detector === $('sel-detector').value &&
+      vs[k].clasificador === $('sel-clasificador').value) || null;
+  }
+
   function mostrarInfoModelos() {
+    const actual = varianteActual();
+    document.querySelectorAll('#grupo-variantes [data-variante]').forEach((b) => {
+      const v = b.dataset.variante;
+      b.classList.toggle('active', v === actual);
+      b.disabled = !estado.modelos?.variantes?.[v]?.disponible;
+    });
+    const rec = estado.modelos?.variante_recomendada;
+    $('info-variante').innerHTML = actual
+      ? `${esc(DESCRIPCION_VARIANTE[actual] || '')}${actual === rec ? ' <span class="badge text-bg-success">recomendada</span>' : ''}`
+      : 'Combinación libre de modelos.';
+    const clsRecortes = clasificadorRecortes();
+    $('info-recortes').innerHTML = !clsRecortes ? ''
+      : `Clasificador: <b>${esc(clsRecortes.nombre)}</b>` +
+        (clasificadorElegido() ? '' : ' (la variante B no usa clasificador; acá se prueba el principal).');
     const det = detectorElegido();
     $('info-detector').innerHTML = det ? `${esc(TIPOS_DETECTOR[det.tipo] || '')} <span class="text-nowrap">(${esc(det.fecha)})</span>` : '';
     const cls = clasificadorElegido();
@@ -148,11 +204,43 @@
     }
   }
 
-  async function elegirFotoEstante(archivo) {
+  async function elegirFotoEstante(archivo, verdad = null) {
     if (!archivo || !archivo.type.startsWith('image/')) return;
+    estado.verdad = verdad;
+    $('grupo-reales').hidden = !verdad;
+    $('btn-descargar-sintetico').hidden = !verdad;
     estado.archivo = archivo;
     estado.imagen = await createImageBitmap(archivo, { imageOrientation: 'from-image' });
     await analizar();
+  }
+
+  async function generarSintetico() {
+    const form = new FormData();
+    const semilla = $('inp-semilla').value.trim();
+    form.append('semilla', semilla === '' ? '-1' : semilla);
+    form.append('niveles', $('sel-niveles').value);
+    form.append('orden', $('sel-orden').value);
+    cargando('Armando el estante sintético…');
+    let res;
+    try {
+      res = await pedir('/api/laboratorio/sintetico', form);
+    } catch (e) {
+      alerta($('avisos'), 'danger', `<b>No se pudo generar el estante:</b> ${esc(e.message)}`);
+      cargando(null);
+      return;
+    }
+    const blob = await (await fetch(res.imagen)).blob();
+    const archivo = new File([blob], `estante_sintetico_s${res.semilla}.jpg`, { type: 'image/jpeg' });
+    await elegirFotoEstante(archivo, res);
+  }
+
+  function descargarSintetico() {
+    if (!estado.verdad || !estado.archivo) return;
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(estado.archivo);
+    a.download = estado.archivo.name;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 5000);
   }
 
   function dibujarEstante() {
@@ -169,6 +257,15 @@
     const fuente = Math.max(12, Math.round(img.width / 55));
     ctx.font = `600 ${fuente}px system-ui, sans-serif`;
     ctx.textBaseline = 'top';
+
+    if (estado.verdad && estado.reales) {
+      const ev = img.width / estado.verdad.ancho;
+      ctx.lineWidth = grosor;
+      ctx.strokeStyle = '#ffffff';
+      ctx.setLineDash([grosor * 2, grosor * 2]);
+      estado.verdad.cajas.forEach((c) => ctx.strokeRect(c.x * ev - grosor, c.y * ev - grosor, c.w * ev + 2 * grosor, c.h * ev + 2 * grosor));
+      ctx.setLineDash([]);
+    }
 
     const clases = clasesResultado();
     const lecturas = res.cajas.map((c) => interpretar(c, clases));
@@ -199,16 +296,17 @@
     // Resumen, conteo y lista
     const visibles = lecturas.filter((l) => l.pasaDet);
     const t = res.tiempos;
-    $('resumen-estante').innerHTML = `${esc(estado.archivo.name)} · ${res.ancho}×${res.alto} px · ` +
+    const v = estado.verdad;
+    const origen = v ? `Estante sintético · semilla ${v.semilla} · ${v.meta.n_niveles} niveles · ${esc(v.meta.orden || '')}` : esc(estado.archivo.name);
+    $('resumen-estante').innerHTML = `${origen} · ${res.ancho}×${res.alto} px · ` +
       `<b>${visibles.length}</b> cajas (de ${res.cajas.length} con conf ≥ 0.05) · detector ${t.deteccion_ms.toFixed(0)} ms` +
       (res.clasificador ? ` · clasificador ${t.clasificacion_ms.toFixed(0)} ms` : '');
 
     const conteo = new Map();
-    (clases.length ? [...clases, DESCONOCIDO] : []).forEach((k) => conteo.set(k, 0));
+    const base = clases.length ? clases : (estado.verdad ? Object.keys(estado.verdad.conteo) : []);
+    (base.length ? [...base, DESCONOCIDO] : []).forEach((k) => conteo.set(k, 0));
     visibles.forEach((l) => conteo.set(l.clase, (conteo.get(l.clase) || 0) + 1));
-    $('tbody-conteo').innerHTML = [...conteo].map(([k, n]) =>
-      `<tr class="${n ? '' : 'text-body-tertiary'}"><td><span class="muestra-color me-2" style="background:${colorDe(k)}"></span>${esc(k)}</td><td class="td-num">${n}</td></tr>`).join('') +
-      `<tr class="table-light fw-semibold"><td>Total</td><td class="td-num">${visibles.length}</td></tr>`;
+    dibujarConteo(conteo, visibles.length);
 
     $('lista-cajas').innerHTML = res.cajas.map((c, i) => {
       const l = lecturas[i];
@@ -224,6 +322,32 @@
     }).join('') || '<tr><td colspan="6" class="text-center text-body-secondary py-3">El detector no encontró nada.</td></tr>';
 
     if (estado.seleccion !== null) mostrarDetalle(estado.seleccion);
+  }
+
+  /** Tabla de conteo; con un estante sintético agrega el conteo real y la diferencia. */
+  function dibujarConteo(conteo, total) {
+    const verdad = estado.verdad?.conteo;
+    if (verdad) Object.keys(verdad).forEach((k) => { if (!conteo.has(k)) conteo.set(k, 0); });
+    const real = (k) => (verdad ? (verdad[k] || 0) : 0);
+    const celdaDif = (d) => `<td class="td-num ${d < 0 ? 'dif-neg' : d > 0 ? 'dif-pos' : 'text-body-tertiary'}">${d > 0 ? '+' : ''}${d}</td>`;
+    $('thead-conteo').innerHTML = verdad
+      ? '<tr><th>Clase</th><th class="text-end">Modelo</th><th class="text-end">Real</th><th class="text-end">Dif.</th></tr>'
+      : '';
+    let errores = 0;
+    let filas = [...conteo].map(([k, n]) => {
+      const r = real(k);
+      errores += Math.abs(n - r);
+      const vacia = !n && !r;
+      return `<tr class="${vacia ? 'text-body-tertiary' : ''}"><td><span class="muestra-color me-2" style="background:${colorDe(k)}"></span>${esc(k)}</td>` +
+        `<td class="td-num">${n}</td>${verdad ? `<td class="td-num">${r}</td>${celdaDif(n - r)}` : ''}</tr>`;
+    }).join('');
+    const totalReal = verdad ? Object.values(verdad).reduce((a, b) => a + b, 0) : 0;
+    filas += `<tr class="table-light fw-semibold"><td>Total</td><td class="td-num">${total}</td>` +
+      (verdad ? `<td class="td-num">${totalReal}</td>${celdaDif(total - totalReal)}` : '') + '</tr>';
+    $('tbody-conteo').innerHTML = filas;
+    $('badge-exactitud').innerHTML = !verdad ? ''
+      : errores === 0 ? '<span class="badge text-bg-success"><i class="bi bi-check-lg me-1"></i>Conteo exacto</span>'
+        : `<span class="badge text-bg-warning">${errores} ${errores === 1 ? 'error' : 'errores'} por clase</span>`;
   }
 
   function barrasProbabilidad(orden, umbral) {
@@ -287,9 +411,12 @@
   }
 
   // ------------------------------------------------------------------ solo clasificador
+  /** El clasificador elegido; si no hay (variante B), el principal: esta pestaña siempre necesita uno. */
+  const clasificadorRecortes = () => clasificadorElegido() || estado.modelos?.clasificadores.find((c) => c.principal) || null;
+
   async function agregarRecortes(archivos) {
-    const cls = clasificadorElegido();
-    if (!cls) { alerta($('avisos'), 'warning', 'Elegí un clasificador para esta prueba.'); return; }
+    const cls = clasificadorRecortes();
+    if (!cls) { alerta($('avisos'), 'warning', 'No hay ningún clasificador en <code>modelos/clasificador/</code>.'); return; }
     const nuevos = [...archivos].filter((a) => a.type.startsWith('image/'))
       .map((archivo) => ({ archivo, url: URL.createObjectURL(archivo), resultado: null, error: null }));
     estado.recortes.unshift(...nuevos);
@@ -298,7 +425,7 @@
   }
 
   async function clasificarRecortes(lista) {
-    const cls = clasificadorElegido();
+    const cls = clasificadorRecortes();
     for (const r of lista) {
       r.resultado = null;
       r.error = null;
@@ -362,6 +489,11 @@
     });
 
     $('btn-reanalizar').addEventListener('click', analizar);
+    $('btn-sintetico').addEventListener('click', generarSintetico);
+    $('btn-descargar-sintetico').addEventListener('click', descargarSintetico);
+    $('chk-reales').addEventListener('change', (e) => { estado.reales = e.target.checked; dibujarEstante(); });
+    document.querySelectorAll('#grupo-variantes [data-variante]').forEach((b) =>
+      b.addEventListener('click', () => aplicarVariante(b.dataset.variante)));
     $('btn-recargar').addEventListener('click', async () => {
       try { await cargarModelos(); Ui.toast('Lista de modelos actualizada'); } catch (e) { alerta($('avisos'), 'danger', esc(e.message)); }
     });

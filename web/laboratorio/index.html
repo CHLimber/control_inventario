@@ -23,6 +23,8 @@
     .recorte-detalle { max-width: 100%; max-height: 220px; border-radius: .35rem; background: #6c757d; }
     .tarjeta-recorte img { width: 100%; height: 160px; object-fit: contain; background: #6c757d; border-radius: .35rem .35rem 0 0; }
     .form-range { margin-top: .35rem; }
+    .dif-neg { color: #b02a37; font-weight: 600; }
+    .dif-pos { color: #996404; font-weight: 600; }
   </style>
 </head>
 <body>
@@ -53,6 +55,14 @@
             <button type="button" class="btn btn-sm btn-outline-secondary ms-auto" id="btn-recargar" title="Volver a buscar modelos en disco"><i class="bi bi-arrow-clockwise"></i></button>
           </div>
           <div class="card-body">
+            <div class="mb-3">
+              <div class="small mb-1">Variante del sistema</div>
+              <div class="btn-group btn-group-sm w-100" role="group" id="grupo-variantes">
+                <button type="button" class="btn btn-outline-primary" data-variante="A" title="Detector de 1 clase + clasificador MobileNetV2">A · detector + CNN</button>
+                <button type="button" class="btn btn-outline-primary" data-variante="B" title="YOLO multiclase: detecta y clasifica a la vez">B · YOLO multiclase</button>
+              </div>
+              <div class="form-text" id="info-variante"></div>
+            </div>
             <div class="mb-3" id="grupo-detector">
               <label class="form-label small mb-1" for="sel-detector">Detector</label>
               <select class="form-select form-select-sm" id="sel-detector"></select>
@@ -79,6 +89,10 @@
               <input class="form-check-input" type="checkbox" id="chk-etiquetas" checked>
               <label class="form-check-label small" for="chk-etiquetas">Mostrar etiquetas en la foto</label>
             </div>
+            <div class="form-check form-switch mt-1" id="grupo-reales" hidden>
+              <input class="form-check-input" type="checkbox" id="chk-reales">
+              <label class="form-check-label small" for="chk-reales">Mostrar las cajas reales (blanco punteado)</label>
+            </div>
           </div>
         </div>
       </div>
@@ -88,6 +102,35 @@
         <div class="tab-content">
           <!-- ------------------------- ESTANTE -->
           <section class="tab-pane fade show active" id="tab-estante" role="tabpanel">
+            <div class="card mb-3" id="card-sintetico" hidden>
+              <div class="card-body py-2">
+                <div class="d-flex flex-wrap align-items-end gap-2">
+                  <div class="fw-semibold me-1 align-self-center"><i class="bi bi-magic me-1"></i>Estante sintético</div>
+                  <div>
+                    <label class="form-label small mb-0" for="sel-niveles">Niveles</label>
+                    <select class="form-select form-select-sm" id="sel-niveles">
+                      <option value="0">Al azar</option><option value="3">3</option><option value="4">4</option><option value="5">5</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label class="form-label small mb-0" for="sel-orden">Orden</label>
+                    <select class="form-select form-select-sm" id="sel-orden">
+                      <option value="">Al azar</option><option value="ordenado">Ordenado</option>
+                      <option value="normal">Normal</option><option value="desordenado">Desordenado</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label class="form-label small mb-0" for="inp-semilla">Semilla</label>
+                    <input type="number" min="0" class="form-control form-control-sm" id="inp-semilla" placeholder="al azar" style="width: 7.5rem">
+                  </div>
+                  <button type="button" class="btn btn-sm btn-success" id="btn-sintetico"><i class="bi bi-shuffle me-1"></i>Generar y analizar</button>
+                  <button type="button" class="btn btn-sm btn-outline-secondary" id="btn-descargar-sintetico" hidden title="Guardar la imagen (para probarla en el escáner)"><i class="bi bi-download"></i></button>
+                </div>
+                <div class="form-text mb-0">Se arma un estante nuevo con su conteo exacto, para comparar contra lo que ve el modelo.
+                  Los envases salen de fotos de entrenamiento: sirve para demostrar y comparar modelos, no para medir el estante real.</div>
+              </div>
+            </div>
+
             <label class="zona-foto d-block mb-3" id="zona-estante">
               <input type="file" accept="image/*" id="archivo-estante" hidden>
               <i class="bi bi-image fs-3 text-body-secondary"></i>
@@ -107,8 +150,9 @@
                 </div>
                 <div class="col-12 col-xl-4">
                   <div class="card mb-3">
-                    <div class="card-header fw-semibold py-2">Conteo</div>
+                    <div class="card-header fw-semibold py-2 d-flex align-items-center">Conteo <span class="ms-auto" id="badge-exactitud"></span></div>
                     <table class="table table-sm mb-0">
+                      <thead class="table-light" id="thead-conteo"></thead>
                       <tbody id="tbody-conteo"></tbody>
                     </table>
                   </div>
@@ -143,6 +187,7 @@
               <div class="fw-semibold">Elegí, arrastrá o pegá fotos de UN envase cada una</div>
               <div class="small text-body-secondary">Prueba el clasificador sin detector: cada foto se toma como un recorte.</div>
             </label>
+            <div class="small text-body-secondary mb-2" id="info-recortes"></div>
             <div class="d-flex mb-2" id="barra-recortes" hidden>
               <button type="button" class="btn btn-sm btn-outline-secondary ms-auto" id="btn-limpiar-recortes"><i class="bi bi-trash me-1"></i>Limpiar</button>
             </div>
@@ -160,6 +205,6 @@
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script src="../comun/ui.js"></script>
-  <script src="laboratorio.js"></script>
+  <script src="laboratorio.js?v=4"></script>
 </body>
 </html>

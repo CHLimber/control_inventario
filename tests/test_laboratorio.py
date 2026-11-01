@@ -38,10 +38,12 @@ def cliente(tmp_path: Path, monkeypatch):
     raiz = tmp_path
     modelos = raiz / "modelos"
     (modelos / "detector").mkdir(parents=True)
-    (modelos / "detector" / "detector_1clase.pt").write_bytes(b"x")
-    (modelos / "yolo26n.pt").write_bytes(b"x")
+    (modelos / "detector" / "detector_1clase.pt").write_bytes(b"1clase")
+    (modelos / "yolo26n.pt").write_bytes(b"coco")
     (raiz / "runs" / "detector" / "multiclase_prueba" / "weights").mkdir(parents=True)
-    (raiz / "runs" / "detector" / "multiclase_prueba" / "weights" / "best.pt").write_bytes(b"x")
+    (raiz / "runs" / "detector" / "multiclase_prueba" / "weights" / "best.pt").write_bytes(b"prueba")
+    (raiz / "runs" / "detector" / "colab_1clase" / "weights").mkdir(parents=True)     # copia: no se lista
+    (raiz / "runs" / "detector" / "colab_1clase" / "weights" / "best.pt").write_bytes(b"1clase")
     viejo = modelos / "clasificador" / "noche"
     viejo.mkdir(parents=True)
     (viejo / "clasificador.keras").write_bytes(b"x")
@@ -118,3 +120,45 @@ def test_errores(cliente):
     assert cliente.post("/api/laboratorio/analizar", files={"imagen": ("e.jpg", b"no es imagen")},
                         data={"detector": "modelos/yolo26n.pt"}).status_code == 422
     assert cliente.get("/laboratorio/").status_code == 200
+
+
+def test_variantes_y_recomendado(cliente):
+    datos = cliente.get("/api/laboratorio/modelos").json()
+    assert set(datos["variantes"]) == {"A", "B"}
+    assert datos["variante_recomendada"] == "B"
+    assert datos["variantes"]["B"]["clasificador"] == ""
+    prueba = {d["nombre"]: d["prueba"] for d in datos["detectores"]}
+    assert prueba["multiclase_prueba"] is True and prueba["detector_1clase"] is False
+    assert [d["tipo"] for d in datos["detectores"]][-1] == "multiclase"   # las de prueba, al final
+
+
+def test_estante_sintetico(cliente, monkeypatch):
+    from src.sinteticos import al_vuelo
+    from src.sinteticos.composicion import Escena
+
+    pedidos = []
+
+    def generar(semilla, niveles=0, orden=None, acercamiento=False):
+        pedidos.append((semilla, niveles, orden))
+        return Escena(np.zeros((100, 80, 3), np.uint8), [(1, 5.0, 6.0, 25.0, 46.0), (7, 30, 6, 50, 46)],
+                      {"n_niveles": 3, "orden": "ordenado", "luz": "natural", "vista": "frente"})
+
+    monkeypatch.setattr(al_vuelo, "generar_estante", generar)
+    r = cliente.post("/api/laboratorio/sintetico", data={"semilla": 5, "niveles": 3, "orden": "ordenado"})
+    assert r.status_code == 200, r.text
+    datos = r.json()
+    assert pedidos == [(5, 3, "ordenado")]
+    assert (datos["ancho"], datos["alto"]) == (80, 100)
+    assert datos["imagen"].startswith("data:image/jpeg;base64,")
+    assert datos["cajas"][0] == {"x": 5.0, "y": 6.0, "w": 20.0, "h": 40.0, "clase": "coca_lata"}
+    assert datos["conteo"]["coca_lata"] == 1 and datos["conteo"]["pepsi_lata"] == 1
+    assert cliente.post("/api/laboratorio/sintetico", data={"orden": "caotico"}).status_code == 422
+    cliente.post("/api/laboratorio/sintetico")              # semilla al azar
+    assert pedidos[-1][0] >= 0 and pedidos[-1][2] is None
+
+
+def test_la_web_no_queda_en_cache(cliente):
+    """Después de actualizar la web, el navegador tiene que pedir de nuevo el .js (no usar uno viejo)."""
+    r = cliente.get("/laboratorio/laboratorio.js")
+    assert r.status_code == 200 and r.headers["cache-control"] == "no-cache"
+    assert cliente.get("/laboratorio/laboratorio.js", headers={"if-none-match": r.headers["etag"]}).status_code == 304
