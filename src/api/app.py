@@ -21,6 +21,7 @@ from src.api.pipeline import resolver_pipeline
 from src.api.rutas_cierres import PREFIJO_URL_ESCANEOS
 from src.api.rutas_cierres import router as router_cierres
 from src.api.rutas_inventario import router as router_inventario
+from src.api.rutas_laboratorio import router as router_laboratorio
 from src.conciliacion import (AjusteInvalido, CierreNoEncontrado, CierreYaConfirmado,
                               ErrorConciliacion)
 from src.db import crear_fabrica_sesiones, crear_motor, crear_tablas
@@ -34,7 +35,7 @@ API del **control de inventario por visión** (arqueo de mercadería).
 * `POST /api/cierres/{id}/confirmar`: el cajero corrige y confirma; se generan los ajustes.
 * `POST /api/asistente`: preguntas en lenguaje natural sobre las diferencias (RAG).
 
-Web: `/escaner/` (celular) y `/panel/` (PC). Fotos: `/escaneos/...`.
+Web: `/escaner/` (celular), `/panel/` (PC) y `/laboratorio/` (probar los modelos). Fotos: `/escaneos/...`.
 """
 
 _CODIGOS_ERROR: dict[type[ErrorConciliacion], int] = {
@@ -96,6 +97,7 @@ def crear_app(url_bd: str | None = None, pipeline: Any = None,
 
     app.include_router(router_inventario)
     app.include_router(router_cierres)
+    app.include_router(router_laboratorio)
 
     @app.get("/", include_in_schema=False)
     def _raiz() -> RedirectResponse:
@@ -104,5 +106,6 @@ def crear_app(url_bd: str | None = None, pipeline: Any = None,
     app.mount(PREFIJO_URL_ESCANEOS, EstaticosOpcionales(dir_escaneos), name="escaneos")
     app.mount("/escaner", EstaticosOpcionales(dir_web / "escaner", html=True), name="escaner")
     app.mount("/panel", EstaticosOpcionales(dir_web / "panel", html=True), name="panel")
+    app.mount("/laboratorio", EstaticosOpcionales(dir_web / "laboratorio", html=True), name="laboratorio")
     app.mount("/comun", EstaticosOpcionales(dir_web / "comun"), name="comun")
     return app

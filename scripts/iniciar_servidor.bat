@@ -36,6 +36,7 @@ echo  Python: %PY%
 echo ==============================================================
 echo.
 echo  Desde esta PC:     http://localhost:%PUERTO%/panel/
+echo  Laboratorio:       http://localhost:%PUERTO%/laboratorio/
 echo  Swagger:           http://localhost:%PUERTO%/docs
 echo.
 echo  Desde el celular (misma red Wi-Fi), usa la IP de esta PC:

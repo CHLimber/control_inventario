@@ -54,6 +54,9 @@ El detector todavía no tiene ningún entrenamiento completo y los modelos del c
   de cualquier estante real (aunque sea con el celular) habría un test del dominio real; si no, aclarar la limitación
   en el informe.
 - Probar de punta a punta con el celular cuando haya modelos entrenados.
+- **Laboratorio web** (`/laboratorio/`, `src/api/rutas_laboratorio.py`): elegir cualquier detector (`modelos/detector/*.pt`,
+  `runs/detector/*/weights/best.pt`, YOLO de COCO) y cualquier clasificador `.keras` (también los de 9 clases), subir una
+  foto y mover los umbrales en vivo. No usa la BD ni está en el contrato de la API.
 
 ## 5. Repositorio
 
