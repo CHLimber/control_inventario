@@ -21,10 +21,19 @@ Los dos modelos se entrenaron en Colab (T4) y están en `modelos/` (pesos fuera 
   Los tests no son los mismos (el de 1 clase tiene más datasets), así que las dos variantes no se comparan directo.
   La más floja en multiclase es `pepsi_lata` (mAP50-95 0,777).
 
+Desde el 2026-11-01 el sistema usa los modelos de verdad: `src/vision/pipeline.py` implementa `contar()` para las
+variantes A y B (antes `VARIANTE_VISION=A` caía al mock sin avisar). La demo está preparada: `scripts/demo_poblar.py`
+y la guía `docs/demo.md`.
+
+**Medición en estantes sintéticos nuevos** (45, de 3 a 5 niveles, los tres órdenes; semillas fuera de los lotes):
+la variante B contó exacto el 100 % y la A el 27 %, con 4,3 errores por clase y por imagen. Los dos detectores
+aciertan casi todo, porque son estantes del mismo generador y con los mismos envases del entrenamiento. Falla el
+**clasificador de la A**, que nunca vio recortes sintéticos. Por eso el laboratorio y la demo recomiendan la B.
+
 Falta:
 
-1. **Probar el sistema con estos modelos** (`VARIANTE_VISION=A` y `B`, y el laboratorio web), en particular si subir
-   `UMBRAL_DET` corrige el conteo de más del detector de 1 clase.
+1. **Clasificador con recortes sintéticos:** reentrenarlo agregando recortes de los estantes sintéticos
+   (`scripts/clasificador_sintetico.py`) y repetir la medición. Hoy la variante A pierde contra la B por eso.
 2. **Medir si los sintéticos ayudan:** entrenar el detector de 1 clase **sin** sintéticos (empaquetar sin
    `--con-sinteticos`) y comparar en los mismos val/test reales.
 3. Pasar los resultados a `docs/clasificador.md` y `docs/detector.md`, y opcionalmente recalcular en la PC con

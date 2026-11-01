@@ -10,6 +10,8 @@ data/sinteticos/
 datos/sinteticos/
 datos/web/
 datos/escaneos/
+datos/demo/
+datos/respaldos/
 datos/viabilidad/salidas/
 runs/
 logs/
