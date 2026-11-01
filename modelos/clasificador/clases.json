@@ -9,8 +9,7 @@
     {"id": 4, "clase": "sprite_botella", "nombre": "Sprite botella",    "marca": "Sprite",    "formato": "botella"},
     {"id": 5, "clase": "sprite_lata",    "nombre": "Sprite lata",       "marca": "Sprite",    "formato": "lata"},
     {"id": 6, "clase": "pepsi_botella",  "nombre": "Pepsi botella",     "marca": "Pepsi",     "formato": "botella"},
-    {"id": 7, "clase": "pepsi_lata",     "nombre": "Pepsi lata",        "marca": "Pepsi",     "formato": "lata"},
-    {"id": 8, "clase": "7up_lata",       "nombre": "7Up lata",          "marca": "7Up",       "formato": "lata"}
+    {"id": 7, "clase": "pepsi_lata",     "nombre": "Pepsi lata",        "marca": "Pepsi",     "formato": "lata"}
   ],
   "desconocido": {"clase": "desconocido", "nombre": "No reconocido"},
   "detector_1clase": {"id": 0, "clase": "producto", "nombre": "Producto"}

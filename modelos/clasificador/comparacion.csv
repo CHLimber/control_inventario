@@ -1,4 +1,4 @@
-modelo,tamano,parametros,epocas,minutos,val_accuracy,val_loss,val_macro_f1,test_accuracy,test_loss,test_macro_f1,test_botella_lata,test_sprite_7up,umbral_sugerido,n_train,prueba,fecha
-cnn,128,2603057,10,16.35,0.866,0.3889,0.8285,0.8704,0.4329,0.8445,103,16,0.9,10107,False,2026-10-16T04:00:26
-cnn_ad,128,6367757,40,72.89,0.9152,0.2776,0.8918,0.9072,0.3345,0.8875,82,9,0.8,10107,False,2026-10-16T04:16:59
-mobilenet,160,2269513,25,117.36,0.9347,0.2174,0.9091,0.9181,0.2475,0.8993,45,12,0.65,10107,False,2026-10-16T05:30:06
+modelo,tamano,parametros,epocas,minutos,val_accuracy,val_loss,val_macro_f1,test_accuracy,test_loss,test_macro_f1,test_botella_lata,umbral_sugerido,n_train,prueba,fecha
+cnn,128,2602956,10,1.71,0.8691,0.3627,0.8199,0.8862,0.3707,0.8455,116,0.95,11451,False,2026-10-31T15:50:15
+cnn_ad,128,6367506,25,5.1,0.9173,0.2408,0.8779,0.901,0.3128,0.8681,102,0.75,11451,False,2026-10-31T15:52:06
+mobilenet,160,2268232,25,7.03,0.9459,0.1682,0.9267,0.9323,0.2274,0.9151,50,0.5,11451,False,2026-10-31T15:57:17

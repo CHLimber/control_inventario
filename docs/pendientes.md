@@ -1,25 +1,36 @@
-# Pendientes (actualizado el 2026-10-17)
+# Pendientes (actualizado el 2026-11-01)
 
 Lista para retomar más tarde. Lo que ya está hecho está en `docs/datos.md`, `docs/sinteticos.md`,
 `docs/clasificador.md` y `docs/detector.md`.
 
-## 1. Entrenar en Colab (lo más importante)
+## 1. Entrenamiento en Colab: hecho el 2026-11-01
 
-El detector todavía no tiene ningún entrenamiento completo y los modelos del clasificador son de 9 clases
-(el sistema los rechaza con un error claro).
+Los dos modelos se entrenaron en Colab (T4) y están en `modelos/` (pesos fuera de git):
 
-1. Subir los zips (ya generados, fuera de git):
-   - `runs/detector/colab/inventario_detector.zip` (2,9 GB, con el lote de 10 000 sintéticos) a
-     `MyDrive/inventario/inventario_detector.zip`.
-   - `modelos/clasificador/colab/clasificador_colab.zip` (190 MB, 14 162 recortes) en la celda de subida de
-     `notebooks/05_clasificador_colab.ipynb`.
-2. Correr `notebooks/04_detector_colab.ipynb` (1 clase y multiclase) y `notebooks/05_clasificador_colab.ipynb`.
-3. Traer los resultados: `python scripts/clasificador_empaquetar_colab.py importar <resultados_clasificador.zip>` y,
-   para el detector, `python scripts/detector_evaluar.py todo --variante 1clase` (y `multiclase`).
-4. **Medir si los sintéticos ayudan:** entrenar el detector de 1 clase con y sin `--con-sinteticos` y comparar en val/test reales.
-5. Reentrenar el clasificador con las 8 clases. La corrida local larga de MobileNetV2 (alargando el ajuste fino) no
-   mejoró el modelo anterior (test 0,906 contra 0,918), así que alargar épocas no es la palanca: son los datos.
-6. Copiar los pesos a `modelos/` y probar con `VARIANTE_VISION=A`.
+- **Clasificador** (8 clases, `modelos/clasificador/clasificador.keras`): MobileNetV2 160 px, test acc 0,932,
+  F1 macro 0,915, 50 confusiones botella↔lata (cnn 0,886 y cnn_ad 0,901). El de 9 clases daba 0,918.
+  Los modelos de 9 clases quedaron en `modelos/clasificador/anterior_9clases/`.
+- **Detector** (`modelos/detector/detector_1clase.pt` y `detector_multiclase.pt`, yolo26n, con el lote de 10 000
+  sintéticos); métricas en `runs/detector/colab/metricas_colab.json`:
+
+  | Variante | test mAP50 | test mAP50-95 | MAE de conteo | Conteo exacto | Sesgo |
+  |---|---|---|---|---|---|
+  | 1 clase (3 074 imágenes de test) | 0,954 | 0,677 | 0,43 | 85 % | +0,33 (cuenta de más) |
+  | multiclase (547 imágenes de test) | 0,972 | 0,853 | 0,11 | 92 % | +0,08 |
+
+  Los tests no son los mismos (el de 1 clase tiene más datasets), así que las dos variantes no se comparan directo.
+  La más floja en multiclase es `pepsi_lata` (mAP50-95 0,777).
+
+Falta:
+
+1. **Probar el sistema con estos modelos** (`VARIANTE_VISION=A` y `B`, y el laboratorio web), en particular si subir
+   `UMBRAL_DET` corrige el conteo de más del detector de 1 clase.
+2. **Medir si los sintéticos ayudan:** entrenar el detector de 1 clase **sin** sintéticos (empaquetar sin
+   `--con-sinteticos`) y comparar en los mismos val/test reales.
+3. Pasar los resultados a `docs/clasificador.md` y `docs/detector.md`, y opcionalmente recalcular en la PC con
+   `python scripts/detector_evaluar.py todo --variante 1clase` (y `multiclase`).
+4. En Colab gratis: guardar `runs` en Drive para poder retomar con `resume=True` si se corta la sesión, y repartir
+   las corridas entre cuentas si se acaba la cuota de GPU.
 
 ## 2. Datos (el límite real del proyecto)
 
@@ -53,14 +64,14 @@ El detector todavía no tiene ningún entrenamiento completo y los modelos del c
 - No hay fotos de la maqueta ni de un estante real: todo se mide en datasets públicos y sintéticos. Con 30 o 50 fotos
   de cualquier estante real (aunque sea con el celular) habría un test del dominio real; si no, aclarar la limitación
   en el informe.
-- Probar de punta a punta con el celular cuando haya modelos entrenados.
+- Probar de punta a punta con el celular, ahora que hay modelos entrenados.
 - **Laboratorio web** (`/laboratorio/`, `src/api/rutas_laboratorio.py`): elegir cualquier detector (`modelos/detector/*.pt`,
   `runs/detector/*/weights/best.pt`, YOLO de COCO) y cualquier clasificador `.keras` (también los de 9 clases), subir una
   foto y mover los umbrales en vivo. No usa la BD ni está en el contrato de la API.
 
 ## 5. Repositorio
 
-- `modelos/clasificador/noche/` y `modelos/clasificador/prueba/` son salidas de corridas locales (sin versionar).
+- `modelos/clasificador/noche/`, `prueba/` y `anterior_9clases/` son salidas locales (ignoradas en git).
 - `notebooks/06_clasificador_jupyter.ipynb` y `07_detector_jupyter.ipynb`: entrenamiento a la vista en Jupyter
   (el detector en CPU solo en modo `demo`).
 - Ofrecida y no creada: guía de estudio (`docs/guia_estudio.md`) con ejemplos de los propios resultados.

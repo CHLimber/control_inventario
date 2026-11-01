@@ -1,230 +1,204 @@
 {
   "modelo": "mobilenet",
   "tamano": 160,
-  "parametros": 2269513,
+  "parametros": 2268232,
   "epocas": 25,
-  "minutos": 117.36,
+  "minutos": 7.03,
   "seg_por_epoca": [
-    300.7,
-    294.4,
-    286.9,
-    300.2,
-    289.7,
-    280.9,
-    293.1,
-    280.0,
-    280.4,
-    273.4,
-    271.9,
-    271.0,
-    264.1,
-    272.3,
-    261.1,
-    292.3,
-    281.7,
-    281.0,
-    280.3,
-    279.9,
-    281.4,
-    279.6,
-    281.5,
-    282.9,
-    279.6
+    37.2,
+    15.0,
+    16.0,
+    15.0,
+    15.0,
+    14.5,
+    14.9,
+    14.9,
+    14.3,
+    14.8,
+    14.3,
+    14.8,
+    15.1,
+    15.5,
+    14.2,
+    25.6,
+    16.9,
+    16.2,
+    17.8,
+    16.2,
+    16.3,
+    17.3,
+    16.3,
+    16.3,
+    16.2
   ],
   "n": {
-    "train": 10107,
-    "val": 1179,
-    "test": 1196
+    "train": 11451,
+    "val": 1367,
+    "test": 1344
   },
   "class_weight": {
-    "coca_botella": 0.687,
-    "coca_lata": 0.857,
-    "fanta_botella": 0.698,
-    "fanta_lata": 2.955,
-    "sprite_botella": 0.639,
-    "sprite_lata": 1.907,
-    "pepsi_botella": 0.751,
-    "pepsi_lata": 1.671,
-    "7up_lata": 1.702
+    "coca_botella": 0.707,
+    "coca_lata": 0.916,
+    "fanta_botella": 0.741,
+    "fanta_lata": 3.767,
+    "sprite_botella": 0.586,
+    "sprite_lata": 2.35,
+    "pepsi_botella": 0.854,
+    "pepsi_lata": 1.737
   },
   "prueba": false,
   "max_por_clase": null,
   "pesos_base": "imagenet",
-  "fecha": "2026-10-16T05:30:06",
-  "logs": "C:\\Users\\limber\\Documents\\Semestres\\2-2026\\Preparacion Decisiones\\IA\\control_inventario\\logs\\clasificador\\mobilenet_20261016-053006",
+  "fecha": "2026-10-31T15:57:17",
+  "logs": "/content/control_inventario/logs/clasificador/mobilenet_20261031-155717",
   "val": {
-    "n": 1179,
-    "accuracy": 0.9346904156064462,
-    "loss": 0.21737241744995117,
-    "macro_f1": 0.9091275045363769,
+    "n": 1367,
+    "accuracy": 0.9458668617410387,
+    "loss": 0.16820187866687775,
+    "macro_f1": 0.9267435812754365,
     "reporte": {
       "coca_botella": {
-        "precision": 0.9779005524861878,
-        "recall": 0.9365079365079365,
-        "f1-score": 0.9567567567567568,
-        "support": 189.0
+        "precision": 0.9629629629629629,
+        "recall": 0.9590163934426229,
+        "f1-score": 0.9609856262833676,
+        "support": 244.0
       },
       "coca_lata": {
-        "precision": 0.9545454545454546,
-        "recall": 0.9735099337748344,
-        "f1-score": 0.9639344262295082,
-        "support": 151.0
+        "precision": 0.9715909090909091,
+        "recall": 0.9243243243243243,
+        "f1-score": 0.9473684210526315,
+        "support": 185.0
       },
       "fanta_botella": {
-        "precision": 0.9850746268656716,
-        "recall": 0.9295774647887324,
-        "f1-score": 0.9565217391304348,
-        "support": 213.0
+        "precision": 0.9609375,
+        "recall": 0.968503937007874,
+        "f1-score": 0.9647058823529412,
+        "support": 254.0
       },
       "fanta_lata": {
-        "precision": 0.6590909090909091,
-        "recall": 0.8787878787878788,
-        "f1-score": 0.7532467532467533,
+        "precision": 0.875,
+        "recall": 0.8484848484848485,
+        "f1-score": 0.8615384615384616,
         "support": 33.0
       },
       "sprite_botella": {
-        "precision": 0.9890710382513661,
-        "recall": 0.9526315789473684,
-        "f1-score": 0.9705093833780161,
-        "support": 190.0
+        "precision": 0.975609756097561,
+        "recall": 0.975609756097561,
+        "f1-score": 0.975609756097561,
+        "support": 287.0
       },
       "sprite_lata": {
-        "precision": 0.8783783783783784,
-        "recall": 0.8783783783783784,
-        "f1-score": 0.8783783783783784,
-        "support": 74.0
+        "precision": 0.8837209302325582,
+        "recall": 0.95,
+        "f1-score": 0.9156626506024096,
+        "support": 80.0
       },
       "pepsi_botella": {
-        "precision": 0.9285714285714286,
-        "recall": 0.9285714285714286,
-        "f1-score": 0.9285714285714286,
-        "support": 168.0
+        "precision": 0.9251336898395722,
+        "recall": 0.9251336898395722,
+        "f1-score": 0.9251336898395722,
+        "support": 187.0
       },
       "pepsi_lata": {
-        "precision": 0.84,
-        "recall": 0.9,
-        "f1-score": 0.8689655172413793,
-        "support": 70.0
+        "precision": 0.85,
+        "recall": 0.8762886597938144,
+        "f1-score": 0.8629441624365483,
+        "support": 97.0
       },
-      "7up_lata": {
-        "precision": 0.8686868686868687,
-        "recall": 0.945054945054945,
-        "f1-score": 0.9052631578947369,
-        "support": 91.0
-      },
-      "accuracy": 0.9346904156064462,
+      "accuracy": 0.9458668617410387,
       "macro avg": {
-        "precision": 0.8979243618751406,
-        "recall": 0.9247799494235003,
-        "f1-score": 0.9091275045363769,
-        "support": 1179.0
+        "precision": 0.9256194685279454,
+        "recall": 0.9284202011238272,
+        "f1-score": 0.9267435812754365,
+        "support": 1367.0
       },
       "weighted avg": {
-        "precision": 0.9391895385045851,
-        "recall": 0.9346904156064462,
-        "f1-score": 0.936031140879346,
-        "support": 1179.0
+        "precision": 0.9464579960229597,
+        "recall": 0.9458668617410387,
+        "f1-score": 0.9459899852676172,
+        "support": 1367.0
       }
     },
     "matriz_confusion": [
       [
-        177,
+        234,
+        2,
+        4,
+        0,
+        1,
+        0,
+        3,
+        0
+      ],
+      [
+        5,
+        171,
+        3,
+        0,
+        0,
+        1,
+        1,
+        4
+      ],
+      [
+        1,
+        1,
+        246,
+        4,
+        0,
+        0,
+        2,
+        0
+      ],
+      [
+        1,
+        1,
+        2,
+        28,
+        0,
+        1,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        280,
         5,
         1,
+        1
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        4,
+        76,
+        0,
+        0
+      ],
+      [
+        1,
+        0,
+        1,
+        0,
         2,
+        0,
+        173,
+        10
+      ],
+      [
+        1,
+        1,
+        0,
         0,
         0,
         3,
-        0,
-        1
-      ],
-      [
-        1,
-        147,
-        0,
-        1,
-        0,
-        0,
-        0,
-        2,
-        0
-      ],
-      [
-        1,
-        1,
-        198,
-        11,
-        0,
-        0,
-        2,
-        0,
-        0
-      ],
-      [
-        1,
-        1,
-        0,
-        29,
-        0,
-        0,
-        0,
-        0,
-        2
-      ],
-      [
-        0,
-        0,
-        1,
-        0,
-        181,
-        6,
-        1,
-        0,
-        1
-      ],
-      [
-        0,
-        0,
-        0,
-        1,
-        0,
-        65,
-        0,
-        0,
-        8
-      ],
-      [
-        0,
-        0,
-        1,
-        0,
-        1,
-        0,
-        156,
-        9,
-        1
-      ],
-      [
-        1,
-        0,
-        0,
-        0,
-        0,
-        0,
-        6,
-        63,
-        0
-      ],
-      [
-        0,
-        0,
-        0,
-        0,
-        1,
-        3,
-        0,
-        1,
-        86
+        7,
+        85
       ]
     ],
     "confusiones_clave": {
@@ -232,327 +206,275 @@
         {
           "de": "coca_botella",
           "a": "coca_lata",
-          "n": 5,
-          "tasa": 0.026455026455026454
+          "n": 2,
+          "tasa": 0.00819672131147541
         },
         {
           "de": "coca_lata",
           "a": "coca_botella",
-          "n": 1,
-          "tasa": 0.006622516556291391
+          "n": 5,
+          "tasa": 0.02702702702702703
         },
         {
           "de": "fanta_botella",
           "a": "fanta_lata",
-          "n": 11,
-          "tasa": 0.051643192488262914
+          "n": 4,
+          "tasa": 0.015748031496062992
         },
         {
           "de": "fanta_lata",
           "a": "fanta_botella",
-          "n": 0,
-          "tasa": 0.0
+          "n": 2,
+          "tasa": 0.06060606060606061
         },
         {
           "de": "pepsi_botella",
           "a": "pepsi_lata",
-          "n": 9,
-          "tasa": 0.05357142857142857
+          "n": 10,
+          "tasa": 0.053475935828877004
         },
         {
           "de": "pepsi_lata",
           "a": "pepsi_botella",
-          "n": 6,
-          "tasa": 0.08571428571428572
+          "n": 7,
+          "tasa": 0.07216494845360824
         },
         {
           "de": "sprite_botella",
           "a": "sprite_lata",
-          "n": 6,
-          "tasa": 0.031578947368421054
+          "n": 5,
+          "tasa": 0.017421602787456445
         },
         {
           "de": "sprite_lata",
           "a": "sprite_botella",
-          "n": 0,
-          "tasa": 0.0
+          "n": 4,
+          "tasa": 0.05
         }
       ],
-      "total_botella_lata": 38,
-      "sprite_7up": [
-        {
-          "de": "sprite_lata",
-          "a": "7up_lata",
-          "n": 8,
-          "tasa": 0.10810810810810811
-        },
-        {
-          "de": "7up_lata",
-          "a": "sprite_lata",
-          "n": 3,
-          "tasa": 0.03296703296703297
-        },
-        {
-          "de": "sprite_botella",
-          "a": "7up_lata",
-          "n": 1,
-          "tasa": 0.005263157894736842
-        },
-        {
-          "de": "7up_lata",
-          "a": "sprite_botella",
-          "n": 1,
-          "tasa": 0.01098901098901099
-        }
-      ],
-      "total_sprite_7up": 13
+      "total_botella_lata": 39
     },
     "barrido_umbral": [
       {
         "umbral": 0.3,
         "cobertura": 1.0,
-        "accuracy_aceptadas": 0.9346904156064462
+        "accuracy_aceptadas": 0.9458668617410387
       },
       {
         "umbral": 0.35,
-        "cobertura": 0.9991518235793045,
-        "accuracy_aceptadas": 0.934634974533107
+        "cobertura": 1.0,
+        "accuracy_aceptadas": 0.9458668617410387
       },
       {
         "umbral": 0.4,
-        "cobertura": 0.9991518235793045,
-        "accuracy_aceptadas": 0.934634974533107
+        "cobertura": 0.9956108266276518,
+        "accuracy_aceptadas": 0.9493019838354151
       },
       {
         "umbral": 0.45,
-        "cobertura": 0.9940627650551315,
-        "accuracy_aceptadas": 0.9360068259385665
+        "cobertura": 0.9941477688368691,
+        "accuracy_aceptadas": 0.9506990434142752
       },
       {
         "umbral": 0.5,
-        "cobertura": 0.9864291772688719,
-        "accuracy_aceptadas": 0.937231298366294
+        "cobertura": 0.9890270665691295,
+        "accuracy_aceptadas": 0.9548816568047337
       },
       {
         "umbral": 0.55,
-        "cobertura": 0.9796437659033079,
-        "accuracy_aceptadas": 0.9411255411255411
+        "cobertura": 0.9795171909290417,
+        "accuracy_aceptadas": 0.9611650485436893
       },
       {
         "umbral": 0.6,
-        "cobertura": 0.9669211195928753,
-        "accuracy_aceptadas": 0.9491228070175438
+        "cobertura": 0.9678127286027798,
+        "accuracy_aceptadas": 0.9652305366591081
       },
       {
         "umbral": 0.65,
-        "cobertura": 0.9575911789652247,
-        "accuracy_aceptadas": 0.9530558015943312
+        "cobertura": 0.958302852962692,
+        "accuracy_aceptadas": 0.9687022900763359
       },
       {
         "umbral": 0.7,
-        "cobertura": 0.9448685326547922,
-        "accuracy_aceptadas": 0.9578096947935368
+        "cobertura": 0.9458668617410387,
+        "accuracy_aceptadas": 0.9706109822119103
       },
       {
         "umbral": 0.75,
-        "cobertura": 0.9245122985581001,
-        "accuracy_aceptadas": 0.9623853211009175
+        "cobertura": 0.93050475493782,
+        "accuracy_aceptadas": 0.9748427672955975
       },
       {
         "umbral": 0.8,
-        "cobertura": 0.8999151823579304,
-        "accuracy_aceptadas": 0.9707822808671065
+        "cobertura": 0.9202633504023409,
+        "accuracy_aceptadas": 0.9777424483306836
       },
       {
         "umbral": 0.85,
-        "cobertura": 0.8804071246819338,
-        "accuracy_aceptadas": 0.9730250481695568
+        "cobertura": 0.8990490124359912,
+        "accuracy_aceptadas": 0.9812855980471928
       },
       {
         "umbral": 0.9,
-        "cobertura": 0.8490245971162002,
-        "accuracy_aceptadas": 0.977022977022977
+        "cobertura": 0.8727139722019019,
+        "accuracy_aceptadas": 0.9857502095557418
       },
       {
         "umbral": 0.95,
-        "cobertura": 0.7955894826123834,
-        "accuracy_aceptadas": 0.988272921108742
+        "cobertura": 0.8295537673738113,
+        "accuracy_aceptadas": 0.9911816578483245
       }
     ]
   },
   "test": {
-    "n": 1196,
-    "accuracy": 0.9180602006688964,
-    "loss": 0.24750694632530212,
-    "macro_f1": 0.8992632481300189,
+    "n": 1344,
+    "accuracy": 0.9322916666666666,
+    "loss": 0.2273605614900589,
+    "macro_f1": 0.9151150482148795,
     "reporte": {
       "coca_botella": {
-        "precision": 0.9380952380952381,
-        "recall": 0.933649289099526,
-        "f1-score": 0.9358669833729216,
-        "support": 211.0
+        "precision": 0.9236641221374046,
+        "recall": 0.9603174603174603,
+        "f1-score": 0.9416342412451362,
+        "support": 252.0
       },
       "coca_lata": {
-        "precision": 0.9455782312925171,
-        "recall": 0.952054794520548,
-        "f1-score": 0.9488054607508533,
-        "support": 146.0
+        "precision": 0.9698795180722891,
+        "recall": 0.930635838150289,
+        "f1-score": 0.9498525073746312,
+        "support": 173.0
       },
       "fanta_botella": {
-        "precision": 0.943502824858757,
-        "recall": 0.912568306010929,
-        "f1-score": 0.9277777777777778,
-        "support": 183.0
+        "precision": 0.958904109589041,
+        "recall": 0.9417040358744395,
+        "f1-score": 0.9502262443438914,
+        "support": 223.0
       },
       "fanta_lata": {
-        "precision": 0.7073170731707317,
-        "recall": 0.90625,
-        "f1-score": 0.7945205479452054,
+        "precision": 0.8484848484848485,
+        "recall": 0.875,
+        "f1-score": 0.8615384615384616,
         "support": 32.0
       },
       "sprite_botella": {
-        "precision": 0.9510869565217391,
-        "recall": 0.9510869565217391,
-        "f1-score": 0.9510869565217391,
-        "support": 184.0
+        "precision": 0.9703703703703703,
+        "recall": 0.966789667896679,
+        "f1-score": 0.9685767097966729,
+        "support": 271.0
       },
       "sprite_lata": {
-        "precision": 0.8157894736842105,
-        "recall": 0.8732394366197183,
-        "f1-score": 0.8435374149659864,
-        "support": 71.0
+        "precision": 0.8414634146341463,
+        "recall": 0.9452054794520548,
+        "f1-score": 0.8903225806451613,
+        "support": 73.0
       },
       "pepsi_botella": {
-        "precision": 0.9209039548022598,
-        "recall": 0.9055555555555556,
-        "f1-score": 0.9131652661064426,
-        "support": 180.0
+        "precision": 0.9,
+        "recall": 0.9219512195121952,
+        "f1-score": 0.9108433734939759,
+        "support": 205.0
       },
       "pepsi_lata": {
-        "precision": 0.8863636363636364,
-        "recall": 0.8297872340425532,
-        "f1-score": 0.8571428571428571,
-        "support": 94.0
+        "precision": 0.9019607843137255,
+        "recall": 0.8,
+        "f1-score": 0.847926267281106,
+        "support": 115.0
       },
-      "7up_lata": {
-        "precision": 0.9166666666666666,
-        "recall": 0.9263157894736842,
-        "f1-score": 0.9214659685863874,
-        "support": 95.0
-      },
-      "accuracy": 0.9180602006688964,
+      "accuracy": 0.9322916666666666,
       "macro avg": {
-        "precision": 0.8917004506061951,
-        "recall": 0.9100563735382503,
-        "f1-score": 0.8992632481300189,
-        "support": 1196.0
+        "precision": 0.9143408959502282,
+        "recall": 0.9177004626503897,
+        "f1-score": 0.9151150482148795,
+        "support": 1344.0
       },
       "weighted avg": {
-        "precision": 0.920044280890401,
-        "recall": 0.9180602006688964,
-        "f1-score": 0.9185393993125175,
-        "support": 1196.0
+        "precision": 0.9331565006173697,
+        "recall": 0.9322916666666666,
+        "f1-score": 0.9321415512448596,
+        "support": 1344.0
       }
     },
     "matriz_confusion": [
       [
-        197,
+        242,
+        3,
         5,
-        6,
-        0,
-        0,
-        0,
-        1,
-        1,
-        1
-      ],
-      [
-        4,
-        139,
-        1,
-        1,
         0,
         1,
         0,
-        0,
+        1,
         0
       ],
       [
-        7,
-        1,
-        167,
-        7,
-        1,
-        0,
-        0,
-        0,
-        0
-      ],
-      [
-        0,
-        1,
-        2,
-        29,
-        0,
-        0,
-        0,
-        0,
-        0
-      ],
-      [
-        0,
-        0,
-        1,
-        0,
-        175,
-        7,
-        1,
-        0,
-        0
-      ],
-      [
-        0,
-        0,
-        0,
-        2,
-        0,
-        62,
-        0,
-        1,
-        6
-      ],
-      [
-        2,
-        1,
-        0,
-        0,
-        4,
-        1,
-        163,
         8,
-        1
+        161,
+        2,
+        1,
+        0,
+        1,
+        0,
+        0
       ],
       [
+        7,
+        1,
+        210,
+        4,
+        1,
         0,
         0,
-        0,
+        0
+      ],
+      [
         1,
         1,
         2,
-        12,
-        78,
+        28,
+        0,
+        0,
+        0,
         0
       ],
       [
         0,
         0,
         0,
+        0,
+        262,
+        7,
+        2,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        1,
+        69,
+        0,
+        3
+      ],
+      [
+        3,
+        0,
+        0,
+        0,
+        4,
+        2,
+        189,
+        7
+      ],
+      [
+        1,
+        0,
+        0,
+        0,
         1,
         3,
-        3,
-        0,
-        0,
-        88
+        18,
+        92
       ]
     ],
     "confusiones_clave": {
@@ -560,20 +482,20 @@
         {
           "de": "coca_botella",
           "a": "coca_lata",
-          "n": 5,
-          "tasa": 0.023696682464454975
+          "n": 3,
+          "tasa": 0.011904761904761904
         },
         {
           "de": "coca_lata",
           "a": "coca_botella",
-          "n": 4,
-          "tasa": 0.0273972602739726
+          "n": 8,
+          "tasa": 0.046242774566473986
         },
         {
           "de": "fanta_botella",
           "a": "fanta_lata",
-          "n": 7,
-          "tasa": 0.03825136612021858
+          "n": 4,
+          "tasa": 0.017937219730941704
         },
         {
           "de": "fanta_lata",
@@ -584,129 +506,102 @@
         {
           "de": "pepsi_botella",
           "a": "pepsi_lata",
-          "n": 8,
-          "tasa": 0.044444444444444446
+          "n": 7,
+          "tasa": 0.03414634146341464
         },
         {
           "de": "pepsi_lata",
           "a": "pepsi_botella",
-          "n": 12,
-          "tasa": 0.1276595744680851
+          "n": 18,
+          "tasa": 0.1565217391304348
         },
         {
           "de": "sprite_botella",
           "a": "sprite_lata",
           "n": 7,
-          "tasa": 0.03804347826086957
+          "tasa": 0.025830258302583026
         },
         {
           "de": "sprite_lata",
           "a": "sprite_botella",
-          "n": 0,
-          "tasa": 0.0
+          "n": 1,
+          "tasa": 0.0136986301369863
         }
       ],
-      "total_botella_lata": 45,
-      "sprite_7up": [
-        {
-          "de": "sprite_lata",
-          "a": "7up_lata",
-          "n": 6,
-          "tasa": 0.08450704225352113
-        },
-        {
-          "de": "7up_lata",
-          "a": "sprite_lata",
-          "n": 3,
-          "tasa": 0.031578947368421054
-        },
-        {
-          "de": "sprite_botella",
-          "a": "7up_lata",
-          "n": 0,
-          "tasa": 0.0
-        },
-        {
-          "de": "7up_lata",
-          "a": "sprite_botella",
-          "n": 3,
-          "tasa": 0.031578947368421054
-        }
-      ],
-      "total_sprite_7up": 12
+      "total_botella_lata": 50
     },
     "barrido_umbral": [
       {
         "umbral": 0.3,
         "cobertura": 1.0,
-        "accuracy_aceptadas": 0.9180602006688964
+        "accuracy_aceptadas": 0.9322916666666666
       },
       {
         "umbral": 0.35,
-        "cobertura": 0.9974916387959866,
-        "accuracy_aceptadas": 0.9186923721709975
+        "cobertura": 1.0,
+        "accuracy_aceptadas": 0.9322916666666666
       },
       {
         "umbral": 0.4,
-        "cobertura": 0.9941471571906354,
-        "accuracy_aceptadas": 0.9209419680403701
+        "cobertura": 1.0,
+        "accuracy_aceptadas": 0.9322916666666666
       },
       {
         "umbral": 0.45,
-        "cobertura": 0.9916387959866221,
-        "accuracy_aceptadas": 0.9232715008431703
+        "cobertura": 0.9955357142857143,
+        "accuracy_aceptadas": 0.9342301943198804
       },
       {
         "umbral": 0.5,
-        "cobertura": 0.9824414715719063,
-        "accuracy_aceptadas": 0.9293617021276596
+        "cobertura": 0.9866071428571429,
+        "accuracy_aceptadas": 0.9366515837104072
       },
       {
         "umbral": 0.55,
-        "cobertura": 0.9707357859531772,
-        "accuracy_aceptadas": 0.9336778639104221
+        "cobertura": 0.9784226190476191,
+        "accuracy_aceptadas": 0.9406844106463879
       },
       {
         "umbral": 0.6,
-        "cobertura": 0.9615384615384616,
-        "accuracy_aceptadas": 0.9356521739130435
+        "cobertura": 0.9680059523809523,
+        "accuracy_aceptadas": 0.9454265949269792
       },
       {
         "umbral": 0.65,
-        "cobertura": 0.9439799331103679,
-        "accuracy_aceptadas": 0.9424269264836138
+        "cobertura": 0.9613095238095238,
+        "accuracy_aceptadas": 0.9473684210526315
       },
       {
         "umbral": 0.7,
-        "cobertura": 0.9280936454849499,
-        "accuracy_aceptadas": 0.9495495495495495
+        "cobertura": 0.9486607142857143,
+        "accuracy_aceptadas": 0.9529411764705882
       },
       {
         "umbral": 0.75,
-        "cobertura": 0.903010033444816,
-        "accuracy_aceptadas": 0.9592592592592593
+        "cobertura": 0.9308035714285714,
+        "accuracy_aceptadas": 0.9592326139088729
       },
       {
         "umbral": 0.8,
-        "cobertura": 0.8854515050167224,
-        "accuracy_aceptadas": 0.9641170915958451
+        "cobertura": 0.9174107142857143,
+        "accuracy_aceptadas": 0.9659367396593674
       },
       {
         "umbral": 0.85,
-        "cobertura": 0.867056856187291,
-        "accuracy_aceptadas": 0.970106075216972
+        "cobertura": 0.8965773809523809,
+        "accuracy_aceptadas": 0.970954356846473
       },
       {
         "umbral": 0.9,
-        "cobertura": 0.8319397993311036,
-        "accuracy_aceptadas": 0.978894472361809
+        "cobertura": 0.8697916666666666,
+        "accuracy_aceptadas": 0.9777587681779298
       },
       {
         "umbral": 0.95,
-        "cobertura": 0.7709030100334449,
-        "accuracy_aceptadas": 0.9859002169197397
+        "cobertura": 0.8258928571428571,
+        "accuracy_aceptadas": 0.9819819819819819
       }
     ]
   },
-  "umbral_sugerido": 0.65
+  "umbral_sugerido": 0.5
 }

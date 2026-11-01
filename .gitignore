@@ -19,6 +19,10 @@ logs/
 *.h5
 *.keras
 *.onnx
+# Salidas locales del clasificador (corridas de prueba y respaldo de 9 clases)
+modelos/clasificador/noche/
+modelos/clasificador/prueba/
+modelos/clasificador/anterior_9clases/
 
 # Base de datos
 *.db
